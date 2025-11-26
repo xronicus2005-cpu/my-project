@@ -1,5 +1,5 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "http://localhost:4000/api",
+  baseURL: "https://my-project-server-c3tr.onrender.com/api",
 });
