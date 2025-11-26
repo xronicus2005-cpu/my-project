@@ -1,0 +1,138 @@
+/* Basic styling */
+.header {
+  width: 100%;
+  background-color: #fff;
+  border-bottom: 1px solid #ccc;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 40px;
+  flex-wrap: wrap;
+}
+
+/* Left side */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  flex: 1;
+}
+
+.header-logo {
+  font-weight: 800;
+  font-size: 55px;
+  text-decoration: none;
+  color: #4CAF50;
+  white-space: nowrap;
+}
+
+.header-search {
+  width: 300px;
+}
+
+/* Right side */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Mail icon */
+.mail-icon-link {
+  text-decoration: none;
+  color: #555;
+}
+
+.mail-icon {
+  width: 28px;
+  height: 28px;
+}
+
+/* Avatar */
+.header-avatar {
+  width: 56px;
+  height: 56px;
+  border: 2px solid #fff;
+}
+
+.header-avatar-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Mobile */
+.mobile-menu-toggle {
+  display: none;
+}
+
+.mobile-menu {
+  display: none;
+  flex-direction: column;
+  gap: 15px;
+  padding: 15px 25px;
+  border-top: 1px solid #ccc;
+}
+
+/* Menu links */
+.menu-link {
+  display: block;
+  padding: 10px 25px;
+  text-decoration: none;
+  color: #333;
+}
+
+.menu-link:hover {
+  background-color: #e6f4ea;
+  color: #2E7D32;
+}
+
+.logout-link {
+  color: red;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+
+  .header-logo {
+    font-size: 40px;
+  }
+
+  .header-search {
+    display: none;
+  }
+
+  .header-left {
+    flex: unset;
+    gap: 15px;
+  }
+
+  .mobile-menu-toggle {
+    display: block;
+  }
+
+  .desktop-avatar {
+    display: none;
+  }
+
+  .mobile-menu {
+    display: flex;
+  }
+
+  .mail-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .header-right {
+    gap: 10px;
+    flex-wrap: nowrap;
+  }
+}
