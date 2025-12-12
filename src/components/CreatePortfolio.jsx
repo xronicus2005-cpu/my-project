@@ -6,14 +6,13 @@ import { api } from "../api/axios";
 import { useNavigate } from "react-router-dom";
 
 const selectStyle = {
-  backgroundColor: "inherit",
-  color: "#555",
-  borderRadius: "10px",
+  backgroundColor: "white",
+  borderRadius: "12px",
   fontSize: "1rem",
-  fontWeight: 500,
-  width: "12rem",
-  transition: "0.2s",
-  zIndex: 99999
+  padding: "0.5rem",
+  width: "100%",
+  border: "1px solid #ccc",
+  transition: "0.3s",
 };
 
 const CreatePortfolio = ({ close }) => {
@@ -37,32 +36,53 @@ const CreatePortfolio = ({ close }) => {
     }
   };
 
-  const createPortfolio = (e) => {
-    e.preventDefault();
+  ///suwret juklaytin funkciya
 
-    const formData = new FormData();
-    formData.append("workName", value.workName);
-    formData.append("niche", value.niche);
-    if (value.photo) formData.append("photo", value.photo);
+  const createPortfolio = async (e) => {
+    e.preventDefault()
 
-    api
-      .post("/createPortfolio", formData, {
-        headers: {
-          "x-auth-token": localStorage.getItem("token"),
-          "Content-Type": "multipart/form-data",
+    try{
+      if(!value.photo){
+        toast.error("Suret juklenbedi")
+        return
+      }
+
+      //suret img kit qa jiberiledi
+      const imgData = new FormData()
+      imgData.append("file", value.photo)
+      imgData.append("folder", "portfolio")
+
+      const uploadRes = await api.post("/upload", imgData, {headers: {"Content-Type": "multipart/form-data"}})
+      
+      const imageUrl = uploadRes.data.url
+
+      const saveRes = await api.post("/createPortfolio", 
+        {
+          workName: value.workName,
+          niche: value.niche,
+          photo: imageUrl,
         },
-      })
-      .then((res) => {
-        if (res.data.message === "Jaratildi") {
-          toast.success("Jaratildi");
-          close(false);
+
+        {
+          headers: {"x-auth-token": localStorage.getItem("token")}
         }
-      })
-      .catch((err) => {
-        const msg = err.response?.data?.message;
-        toast.error(msg || "Serverde qatelik boldi");
-      });
-  };
+
+      )
+
+      if(saveRes.data.message == "Jaratildi"){
+        toast.success("Jaratildi")
+        close(false)
+      }
+
+    
+    }
+    catch(err){
+
+      const msg = err.response?.data?.message
+      toast.error(msg)
+
+    }
+  }
 
   return (
     <>
@@ -73,46 +93,63 @@ const CreatePortfolio = ({ close }) => {
           inset: 0,
           width: "100%",
           height: "100%",
-          backgroundColor: "rgba(0,0,0,0.6)",
+          backgroundColor: "rgba(0,0,0,0.85)",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          zIndex: 9999,
-          overflow: "hidden",
-          p: 2,
+          zIndex: 99999,
+          animation: "fadeIn 0.3s ease",
         }}
       >
         {/* MODAL */}
         <Box
           sx={{
-            width: { xs: "95%", sm: "450px", md: "550px" },
+            width: { xs: "92%", sm: "430px", md: "520px" },
             maxHeight: "90vh",
-            backgroundColor: "#fff",
-            borderRadius: 2,
-            p: { xs: 2, sm: 3 },
+            backgroundColor: "#ffffff",
+            borderRadius: "20px",
+            padding: { xs: "1.5rem", sm: "2rem" },
             display: "flex",
             flexDirection: "column",
-            gap: "1.5rem",
+            gap: "1.7rem",
             overflowY: "auto",
+            boxShadow:
+              "0 10px 25px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1)",
+            animation: "scaleIn 0.25s ease",
           }}
         >
           {/* TITLE ROW */}
           <Box
             sx={{
+              width: "100%",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              flexWrap: "nowrap",
+              borderBottom: "1px solid #e5e7eb",
+              pb: 1.2,
             }}
           >
             <Typography
               variant="h5"
-              sx={{ fontSize: { xs: "20px", sm: "24px" } }}
+              sx={{
+                fontSize: { xs: "26px", sm: "30px" },
+                fontWeight: 700,
+                color: "#222",
+              }}
             >
               Portfolio jaratıw
             </Typography>
 
-            <Button onClick={() => close(false)} sx={{ color: "#555" }}>
+            <Button
+              onClick={() => close(false)}
+              sx={{
+                color: "#333",
+                fontWeight: "700",
+                fontSize: "20px",
+                minWidth: "40px",
+                "&:hover": { backgroundColor: "#f3f4f6" },
+              }}
+            >
               X
             </Button>
           </Box>
@@ -129,11 +166,15 @@ const CreatePortfolio = ({ close }) => {
             {/* Work Name */}
             <Box>
               <Typography
-                sx={{ fontSize: "14px", mb: 0.5, lineHeight: 1.4 }}
+                sx={{
+                  fontSize: "13px",
+                  mb: 0.8,
+                  color: "#555",
+                  lineHeight: 1.4,
+                }}
               >
                 Bul jerde siz ózińiz islegen jumıslarıńız, proyektlerińiz
-                benen bólise alasız. Dáslep juwmaqlanǵan jumıslarıńızǵa at
-                beresiz.
+                benen bólise alasız.
               </Typography>
 
               <TextField
@@ -142,46 +183,56 @@ const CreatePortfolio = ({ close }) => {
                 onChange={(e) =>
                   setValue({ ...value, workName: e.target.value })
                 }
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "12px",
+                  },
+                }}
               />
             </Box>
 
             {/* Niche */}
             <Box>
-              <Typography sx={{ fontSize: "14px", mb: 0.5 }}>
+              <Typography
+                sx={{
+                  fontSize: "13px",
+                  mb: 0.7,
+                  color: "#444",
+                  fontWeight: 500,
+                }}
+              >
                 Jumısıńız qaysı baǵdarǵa tiyisli?
               </Typography>
 
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  flexWrap: "wrap",
+              <Select
+                value={value.niche}
+                onChange={(e) =>
+                  setValue({ ...value, niche: e.target.value })
+                }
+                displayEmpty
+                style={selectStyle}
+                MenuProps={{
+                  disablePortal: true,
+                  PaperProps: {
+                    sx: {
+                      borderRadius: "12px",
+                      boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+                    },
+                  },
                 }}
               >
-                Jumıs túri:
-                <Select
-                  value={value.niche}
-                  onChange={(e) =>
-                    setValue({ ...value, niche: e.target.value })
-                  }
-                  displayEmpty
-                  style={selectStyle}
-                  MenuProps={{disablePortal: true, PaperProps: {sx: {zIndex: 999999}}}}
-                >
-                  <MenuItem value="">Baǵdar saylań...</MenuItem>
-                  {work.map((r) => (
-                    <MenuItem key={r} value={r} >
-                      {r}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </label>
+                <MenuItem value="">Baǵdar saylań...</MenuItem>
+                {work.map((r) => (
+                  <MenuItem key={r} value={r}>
+                    {r}
+                  </MenuItem>
+                ))}
+              </Select>
             </Box>
 
             {/* Photo Upload */}
             <Box>
-              <Typography sx={{ fontSize: "14px", mb: 0.5 }}>
+              <Typography sx={{ fontSize: "14px", mb: 0.7, color: "#444" }}>
                 Portfolio súwretin júkleń
               </Typography>
 
@@ -190,15 +241,17 @@ const CreatePortfolio = ({ close }) => {
                   sx={{
                     width: "100%",
                     height: { xs: "200px", sm: "250px" },
-                    border: "solid 1px #777",
-                    borderRadius: "8px",
+                    border: "2px dashed #999",
+                    borderRadius: "14px",
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
                     overflow: "hidden",
                     cursor: "pointer",
                     transition: "0.3s",
+                    backgroundColor: "#fafafa",
                     "&:hover": {
+                      borderColor: "#4ade80",
                       transform: "scale(1.02)",
                     },
                   }}
@@ -214,7 +267,7 @@ const CreatePortfolio = ({ close }) => {
                       }}
                     />
                   ) : (
-                    <span style={{ fontSize: "3rem", color: "#777" }}>+</span>
+                    <span style={{ fontSize: "3rem", color: "#888" }}>+</span>
                   )}
                 </Box>
               </label>
@@ -228,8 +281,21 @@ const CreatePortfolio = ({ close }) => {
               />
             </Box>
 
-            {/* Submit */}
-            <Button type="submit" variant="contained" sx={{ color: "#fff" }}>
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              variant="contained"
+              sx={{
+                color: "#fff",
+                backgroundColor: "#22c55e",
+                padding: "0.8rem",
+                fontWeight: 600,
+                borderRadius: "12px",
+                "&:hover": {
+                  backgroundColor: "#16a34a",
+                },
+              }}
+            >
               Saqlaw
             </Button>
           </form>
@@ -240,5 +306,3 @@ const CreatePortfolio = ({ close }) => {
 };
 
 export default CreatePortfolio;
-
-

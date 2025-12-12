@@ -19,14 +19,14 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 const selectStyle = {
-  backgroundColor: "inherit",
-  color: "#555",
-  borderRadius: "10px",
+  backgroundColor: "#f9fafb",
+  color: "#222",
+  borderRadius: "12px",
+  padding: "0.6rem",
   fontSize: "1rem",
   fontWeight: 500,
-  padding: "0.1rem",
-  transition: "0.2s",
-  width: "100%",               // RESPONSIVE
+  border: "1px solid #d1d5db",
+  width: "100%",
 };
 
 const CreateJob = () => {
@@ -52,6 +52,8 @@ const CreateJob = () => {
     buyersMust: "",
     cost: "",
   });
+
+  console.log(value)
 
   const handleNicheChange = (e) => {
     const newNiche = e.target.value;
@@ -81,72 +83,89 @@ const CreateJob = () => {
     }
   };
 
-  const createJob = (e) => {
+ ////create
+
+  const handleCreate = async(e) => {
     e.preventDefault();
 
-    const formData = new FormData();
-    formData.append("userId", user._id);
-    formData.append("title", value.title);
-    formData.append("niche", value.workType.niche);
-    formData.append("profession", value.workType.profession);
-    formData.append("infoWork", value.infoWork);
-    formData.append("buyersMust", value.buyersMust);
-    formData.append("cost", value.cost);
-    if (value.imgWork) formData.append("imgWork", value.imgWork);
+    try{
 
-    api
-      .post("/create", formData, {
-        headers: {
-          "x-auth-token": localStorage.getItem("token"),
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then((res) => {
-        if (res.data.message === "Jumis jaratildi") {
-          toast.success("Jaratild");
-          navigate("/Profile");
-        }
-      })
-      .catch((err) => {
-        const msg = err.response?.data?.message;
-        if (msg) toast.error(msg || "Serverde qatelik boldi");
-      });
-  };
+      if(!value.imgWork){
+        toast.error("Jumis suwreti juklenbegen")
+        return
+      }
+
+      ///suretti img kit ga julew
+
+      const imgData = new FormData()
+      imgData.append("file", value.imgWork)
+      imgData.append("folder", "Jobs")
+
+      const uploadRes = await api.post("/upload", imgData, {headers: {"Content-Type": "multipart/form-data"}})
+      const imgUrl = uploadRes.data.url
+      value.imgWork = imgUrl
+      
+      const saveRes = await api.post("/create", value, {headers: {"x-auth-token": localStorage.getItem("token")}})
+
+      if(saveRes.data.message == "Jumis jaratildi"){
+        toast.success("Jumis jaratildi")
+        navigate("/Profile")
+      }
+    }
+    catch(err){
+      console.log(err)
+
+      const msg = err.response?.data?.message
+      toast.error(msg)
+    }
+  }
 
   return (
     <>
-      <Container sx={{ mt: 3 }}>
-        <Typography variant="h4">Jumıs jaratıw</Typography>
-      </Container>
-
-      <Container sx={{ mt: 3, mb: 5 }}>
-        <form onSubmit={createJob}>
+      <Container sx={{ mt: 4, mb: 5 }}>
+        <form onSubmit={handleCreate}>
           <Box
             sx={{
               width: "100%",
-              maxWidth: "700px",               // center form
-              backgroundColor: "#fff",
+              maxWidth: "720px",
               mx: "auto",
-              p: { xs: 2, sm: 3, md: 4 },
-              borderRadius: "1rem",
+              p: { xs: 3, sm: 4 },
+              backgroundColor: "#ffffff",
+              borderRadius: "1.2rem",
+              boxShadow: "0 6px 20px rgba(34, 197, 94, 0.25)",
               display: "flex",
               flexDirection: "column",
-              gap: "1.2rem",
+              gap: "1.7rem",
+              border: "1px solid #e2e8f0",
             }}
           >
-            {/* Title */}
-            <label>
-              Jumıs atı:
+            <Typography
+              sx={{
+                fontSize: "32px",
+                fontWeight: "800",
+                padding: "1rem",
+                textAlign: "center",
+                backgroundColor: "#22c55e",
+                color: "#fff",
+                borderRadius: "0.8rem",
+                letterSpacing: "0.5px",
+                boxShadow: "0 3px 10px rgba(0,0,0,0.25)",
+              }}
+            >
+              Jumıs jaratıw
+            </Typography>
+
+            {/* TITLE */}
+            <Box>
+              <Typography sx={{ mb: 1, fontWeight: 600 }}>Jumıs atı:</Typography>
               <TextField
                 fullWidth
                 label="ati"
-                onChange={(e) =>
-                  setValue({ ...value, title: e.target.value })
-                }
+                onChange={(e) => setValue({ ...value, title: e.target.value })}
               />
-            </label>
+            </Box>
 
-            {/* Work Type - Responsive */}
+            {/* Niche + Profession */}
             <Box
               sx={{
                 display: "flex",
@@ -154,12 +173,7 @@ const CreateJob = () => {
                 gap: 2,
               }}
             >
-              <Select
-                value={niche}
-                onChange={handleNicheChange}
-                displayEmpty
-                style={selectStyle}
-              >
+              <Select value={niche} onChange={handleNicheChange} displayEmpty style={selectStyle}>
                 <MenuItem value="">Baǵdar saylań...</MenuItem>
                 {Object.keys(works).map((r) => (
                   <MenuItem key={r} value={r}>
@@ -176,7 +190,6 @@ const CreateJob = () => {
                 style={selectStyle}
               >
                 <MenuItem value="">Kásip saylań ...</MenuItem>
-
                 {niche &&
                   works[niche].map((c) => (
                     <MenuItem key={c} value={c}>
@@ -186,99 +199,112 @@ const CreateJob = () => {
               </Select>
             </Box>
 
-            {/* Photo */}
-            <label htmlFor="choose">
-              Jumıs obloshkasın saylaw:
-              <Box
-                sx={{
-                  width: { xs: "100%", sm: "260px" },
-                  height: { xs: "200px", sm: "250px" },
-                  border: "solid 0.2px #555",
-                  borderRadius: "0.5rem",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  mt: 1,
-                }}
-              >
-                {photo ? (
-                  <img
-                    src={photo}
-                    alt="photo"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                ) : (
-                  <span style={{ fontSize: "3rem", color: "#777" }}>+</span>
-                )}
+            {/* Image Upload */}
+            <Box>
+              <Typography sx={{ mb: 1, fontWeight: 600 }}>Jumıs obloshkasın saylaw:</Typography>
 
-                <input
-                  type="file"
-                  id="choose"
-                  style={{ display: "none" }}
-                  accept="image/*"
-                  onChange={handleFileChange}
-                />
-              </Box>
-            </label>
+              <label htmlFor="choose">
+                <Box
+                  sx={{
+                    width: "100%",
+                    height: { xs: "210px", sm: "260px" },
+                    borderRadius: "1rem",
+                    border: "1px solid #d1d5db",
+                    backgroundColor: "#f8fafc",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    cursor: "pointer",
+                    overflow: "hidden",
+                    transition: "0.3s",
+                    "&:hover": { borderColor: "#22c55e", transform: "scale(1.02)" },
+                  }}
+                >
+                  {photo ? (
+                    <img
+                      src={photo}
+                      alt="photo"
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: "3rem", color: "#94a3b8" }}>+</span>
+                  )}
+                </Box>
+              </label>
 
-            {/* Info */}
-            <label>
-              Jumıs haqqında informaciya:
+              <input
+                type="file"
+                id="choose"
+                style={{ display: "none" }}
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+            </Box>
+
+            {/* INFO */}
+            <Box>
+              <Typography sx={{ mb: 1, fontWeight: 600 }}>
+                Jumıs haqqında informaciya:
+              </Typography>
               <textarea
-                onChange={(e) =>
-                  setValue({ ...value, infoWork: e.target.value })
-                }
+                onChange={(e) => setValue({ ...value, infoWork: e.target.value })}
                 style={{
                   width: "100%",
-                  height: "5rem",
-                  padding: "0.5rem",
+                  height: "6rem",
+                  borderRadius: "10px",
+                  padding: "0.8rem",
+                  border: "1px solid #cbd5e1",
                   fontSize: "1rem",
                 }}
               ></textarea>
-            </label>
+            </Box>
 
-            {/* Buyers must */}
-            <label>
-              Jallawshılardan talap etiledi:
+            {/* BUYERS MUST */}
+            <Box>
+              <Typography sx={{ mb: 1, fontWeight: 600 }}>
+                Jallawshılardan talap etiledi:
+              </Typography>
               <textarea
-                onChange={(e) =>
-                  setValue({ ...value, buyersMust: e.target.value })
-                }
+                onChange={(e) => setValue({ ...value, buyersMust: e.target.value })}
                 style={{
                   width: "100%",
-                  height: "5rem",
-                  padding: "0.5rem",
+                  height: "6rem",
+                  borderRadius: "10px",
+                  padding: "0.8rem",
+                  border: "1px solid #cbd5e1",
                   fontSize: "1rem",
                 }}
               ></textarea>
-            </label>
+            </Box>
 
-            {/* Cost */}
-            <Box sx={{ display: "flex", flexDirection: "column", mt: 2 }}>
-              <label>Jumıs bahası</label>
-              <FormControl fullWidth sx={{ mt: 1 }}>
-                <InputLabel htmlFor="outlined-adornment-amount">
-                  Baha
-                </InputLabel>
+            {/* COST */}
+            <Box sx={{ mt: 1 }}>
+              <Typography sx={{ mb: 1, fontWeight: 600 }}>Jumıs bahası:</Typography>
+              <FormControl fullWidth>
+                <InputLabel htmlFor="outlined-adornment-amount">Baha</InputLabel>
                 <OutlinedInput
                   id="outlined-adornment-amount"
-                  endAdornment={
-                    <InputAdornment position="end">(sum)</InputAdornment>
-                  }
+                  endAdornment={<InputAdornment position="end">(sum)</InputAdornment>}
                   label="Baha"
-                  onChange={(e) =>
-                    setValue({ ...value, cost: e.target.value })
-                  }
+                  onChange={(e) => setValue({ ...value, cost: e.target.value })}
                 />
               </FormControl>
             </Box>
 
-            {/* Button */}
-            <Button type="submit" variant="contained" sx={{ color: "#fff" }}>
+            {/* SUBMIT BUTTON */}
+            <Button
+              type="submit"
+              variant="contained"
+              sx={{
+                color: "#fff",
+                backgroundColor: "#22c55e",
+                padding: "0.9rem",
+                fontSize: "1rem",
+                fontWeight: 700,
+                borderRadius: "0.8rem",
+                "&:hover": { backgroundColor: "#16a34a" },
+              }}
+            >
               Jaratıw
             </Button>
           </Box>

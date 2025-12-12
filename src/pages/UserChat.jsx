@@ -1,296 +1,302 @@
-import { Box, Container, Typography, TextField, Button, Menu, MenuItem } from "@mui/material";
+import { Box, Container, Typography, TextField, Button, IconButton, Avatar, Menu, MenuItem } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
+import SendIcon from "@mui/icons-material/Send";
+import DehazeIcon from "@mui/icons-material/Dehaze";
+import DeleteIcon from "@mui/icons-material/Delete";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { api } from "../api/axios";
-import SendIcon from '@mui/icons-material/Send';
-import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
-import DehazeIcon from '@mui/icons-material/Dehaze';
-import CloseIcon from '@mui/icons-material/Close';
-import DeleteIcon from '@mui/icons-material/Delete';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { toast } from "react-toastify";
-
 import People from "../components/People";
 
 const UserChat = () => {
-
   const [active, setActive] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [connection, setConnection] = useState(null);
   const [me, setMe] = useState();
   const [conversations, setConversations] = useState([]);
+  const [showContacts, setShowContacts] = useState(true);
+  const [userFor, setUserFor] = useState(null);
 
-  // mobile mode controllers
-  const [mobileMode, setMobileMode] = useState("contacts"); 
-  // "contacts" | "chat"
+  const [anchorEl, setAnchorEl] = useState(null);
 
-  const [anchorEl, setAnchorEl] = useState(null)
-  const open = Boolean(anchorEl)
 
-  //===========================================
-  // SOCKET
+  const open = Boolean(anchorEl);
+
+  // Socket.io
   useEffect(() => {
     const socket = io(import.meta.env.VITE_SERVER_URL, {
       withCredentials: true,
-      extraHeaders: { "token": localStorage.getItem("token") },
+      extraHeaders: { token: localStorage.getItem("token") },
     });
     setConnection(socket);
+    return () => socket.disconnect();
   }, []);
 
-  //===========================================
-  // Fetch user & conversations
+
+
+  // Fetch me & conversations
   useEffect(() => {
     const fetchInitial = async () => {
       try {
         const meRes = await api.get("/me", { headers: { "x-auth-token": localStorage.getItem("token") } });
         setMe(meRes.data);
 
-        const conv = await api.get("/getAll", { headers: { "x-auth-token": localStorage.getItem("token") } });
-        setConversations(conv.data?.conversations || []);
-      } catch (err) {
-        console.log(err);
-      }
+        const convRes = await api.get("/getAll", { headers: { "x-auth-token": localStorage.getItem("token") } });
+        setConversations(convRes.data?.conversations || []);
+      } catch (err) { console.log(err); }
     };
     fetchInitial();
   }, []);
 
-  //===========================================
-  // Join room
+  // Join conversation room
   useEffect(() => {
     if (!connection || !active) return;
     connection.emit("joinConversation", active);
   }, [connection, active]);
 
-  //===========================================
-  // Load messages for selected chat
+  // Load messages
   useEffect(() => {
     if (!active) return;
-    const load = async () => {
+    const loadMessages = async () => {
       try {
         const res = await api.get(`/messages/${active}`, { headers: { "x-auth-token": localStorage.getItem("token") } });
         setMessages(res.data.messages);
-      } catch (err) {
-        console.log(err);
-      }
+      } catch (err) { console.log(err); }
     };
-    load();
+    loadMessages();
   }, [active]);
 
-  //===========================================
-  // SEND message
+  // Send message
   const handleSend = () => {
-    if (!newMessage.trim() || !me) return;
-
-    connection.emit("sendMessage", {
-      conversationId: active,
-      senderId: me._id,
-      text: newMessage
-    });
-
+    if (!newMessage.trim() || !me || !connection || !active) return;
+    connection.emit("sendMessage", { conversationId: active, senderId: me._id, text: newMessage });
     setNewMessage("");
   };
 
-  //===========================================
-  // RECEIVE message
+  // Receive message
   useEffect(() => {
     if (!connection) return;
-    connection.on("receiveMessage", (m) => {
+
+    const handler = (m) => {
+
+      // 1) Agar active chatning ichida bo‘lsa → faqat messages ga qo‘shiladi
       if (m.conversationId === active) {
         setMessages(prev => [...prev, m]);
       }
-    });
-    return () => connection.off("receiveMessage");
+
+      // 2) Conversations ichida unreadCount oshirish
+      setConversations(prev =>
+        prev.map(c =>
+          c._id === m.conversationId
+            ? { ...c, unreadCount: c._id === active ? 0 : (c.unreadCount || 0) + 1 }
+            : c
+        )
+      );
+    };
+
+    connection.on("receiveMessage", handler);
+    return () => connection.off("receiveMessage", handler);
   }, [connection, active]);
 
-  //===========================================
-  // Menu handlers
-  const handleClick = (event) => setAnchorEl(event.currentTarget)
-  const handleClose = () => setAnchorEl(null)
 
-  //===========================================
+  // Fetch active user info
+  useEffect(() => {
+    if (!active || !me) return;
+    const conv = conversations.find(c => c._id === active);
+    const otherId = conv?.members.find(m => m !== me._id);
+    if (!otherId) return;
+
+    const fetchUser = async () => {
+      try {
+        const res = await api.get(`/userFor/${otherId}`, { headers: { "x-auth-token": localStorage.getItem("token") } });
+        setUserFor(res.data.user);
+      } catch (err) { console.log(err); }
+    };
+    fetchUser();
+  }, [active, conversations, me]);
+
+  useEffect(() => {
+    if (!active) return;
+
+    // API orqali backendga: unreadCount = 0
+    const markAsRead = async () => {
+      try {
+        await api.put(`/messages/markAsRead/${active}`, {}, {
+          headers: { "x-auth-token": localStorage.getItem("token") },
+        });
+
+        // Local state – conversationsni ham yangilash
+        setConversations(prev =>
+          prev.map(c =>
+            c._id === active ? { ...c, unreadCount: 0 } : c
+          )
+        );
+
+      } catch (err) { console.log(err); }
+    };
+
+    markAsRead();
+  }, [active]);
+
+
+  const getInitials = (name) => name?.split(" ").map(n => n[0].toUpperCase()).join("").slice(0, 2);
+
+  // Menu handlers
+  const handleClick = (e) => setAnchorEl(e.currentTarget);
+  const handleClose = () => setAnchorEl(null);
+
   const handleClear = async () => {
+    if (!active) return;
     const yes = confirm("Chatti tazalawdi qaleysizbe?");
     if (!yes) return;
-
     try {
       const res = await api.delete(`/clearMessages/${active}`, { headers: { "x-auth-token": localStorage.getItem("token") } });
-      if (res.data.message === "Tazalandi") {
-        toast.success("Tazalandi");
-        setMessages([]);
-      }
-    } catch (err) {
-      console.log(err);
-    }
+      if (res.data.message === "Tazalandi") { setMessages([]); toast.success("Tazalandi"); }
+    } catch (err) { console.log(err); }
   };
 
   const handleDelete = async () => {
+    if (!active) return;
     const yes = confirm("Chatti oshiriwdi qaleysizbe?");
     if (!yes) return;
-
     try {
-      const del = await api.delete(`/deleteConversation/${active}`, { headers: { "x-auth-token": localStorage.getItem("token") } });
-
-      if (del.data.message === "Oshirildi") {
-        toast.success("Oshirildi");
-
-        // remove
+      const res = await api.delete(`/deleteConversation/${active}`, { headers: { "x-auth-token": localStorage.getItem("token") } });
+      if (res.data.message === "Oshirildi") {
         setConversations(prev => prev.filter(c => c._id !== active));
         setActive(null);
         setMessages([]);
-
-        // mobile mode back to contacts
-        setMobileMode("contacts");
+        toast.success("Oshirildi");
+        setShowContacts(true);
       }
-    } catch (err) {
-      console.log(err);
-    }
+    } catch (err) { console.log(err); }
   };
 
-  //===========================================
-  // RESPONSIVE LAYOUT STARTS HERE
   return (
-    <Container maxWidth="xl" sx={{
-      display: "flex",
-      height: "100vh",
-      padding: 0,
-      overflow: "hidden"
-    }}>
-
-      {/* CONTACTS PANEL */}
+    <Container sx={{ display: "flex", height: "100vh", p: 0, overflow: "hidden", background: "#f0fdf4" }}>
+      {/* Contacts panel */}
       <Box sx={{
-        width: { xs: mobileMode === "contacts" ? "100%" : "0%", md: "30%" },
-        display: { xs: mobileMode === "contacts" ? "flex" : "none", md: "flex" },
-        flexDirection: "column",
-        backgroundColor: "#fff",
-        borderRight: "1px solid #e5e5e5",
-        transition: "0.3s"
+        width: { xs: showContacts ? "80%" : "0", sm: "30%" },
+        height: "100%",
+        transition: "0.3s",
+        overflow: "hidden",
+        borderRight: "1px solid rgba(255,255,255,0.2)",
+        position: { xs: "absolute", sm: "relative" },
+        zIndex: 20,
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        backgroundColor: "rgba(255,255,255,0.45)",
+        boxShadow: "2px 0 24px rgba(0,0,0,0.15)",
       }}>
-
-        <Typography sx={{
-          fontWeight: 600,
-          fontSize: "1.5rem",
-          background: "linear-gradient(135deg,#81FBB8,#28C76F)",
-          WebkitBackgroundClip: "text",
-          color: "transparent",
-          padding: "15px",
-          display: "flex",
-          alignItems: "center",
-          gap: "10px"
-        }}>
-          Chat <QuestionAnswerIcon />
-        </Typography>
-
-        <Box sx={{
-          flex: 1,
-          overflowY: "auto",
-          padding: "5px",
-          "&::-webkit-scrollbar": { width: "4px" }
-        }}>
-          {conversations.length > 0 ? conversations.map(c => (
-            <People
-              key={c._id}
-              conversation={c}
-              person={me}
-              active={active === c._id}
-              onClick={() => {
-                setActive(c._id);
-                setMobileMode("chat");
-              }}
-            />
-          )) : <Typography sx={{ paddingLeft: "10px" }}>Heshkim menen baylanıspaǵansız</Typography>}
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 2 }}>
+          <Typography sx={{
+            fontWeight: 700,
+            fontSize: "1.4rem",
+            background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+            WebkitBackgroundClip: "text",
+            color: "transparent",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}>Chats</Typography>
+          <IconButton sx={{ display: { xs: "block", sm: "none" } }} onClick={() => setShowContacts(false)}>
+            <CloseIcon />
+          </IconButton>
         </Box>
-
+        <Box sx={{ flex: 1, overflowY: "auto", p: 1 }}>
+          {conversations.length > 0 ? conversations.map(c => (
+            <People key={String(c._id)} conversation={c} person={me} active={active === c._id} onClick={() => setActive(c._id)} />
+          )) : <Typography sx={{ p: 2, color: "#4ade80" }}>Chat jaratilmagan</Typography>}
+        </Box>
       </Box>
 
-      {/* CHAT PANEL */}
-      <Box sx={{
-        width: { xs: mobileMode === "chat" ? "100%" : "0%", md: "70%" },
-        display: { xs: mobileMode === "chat" ? "flex" : "none", md: "flex" },
-        flexDirection: "column",
-        backgroundColor: "#fafafa",
-        transition: "0.3s"
-      }}>
-
+      {/* Chat panel */}
+      <Box sx={{ flexGrow: 1, width: { xs: "100%", sm: "70%" }, display: "flex", flexDirection: "column", height: "100%", position: "relative" }}>
+        {/* Header */}
         <Box sx={{
-          padding: "1rem",
-          backgroundColor: "#81FBB8",
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between"
+          justifyContent: "space-between",
+          gap: 2,
+          p: 2,
+          background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+          borderBottom: "1px solid #ddd",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+          position: "relative",
+          flexWrap: "wrap",
         }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            {/* back button for mobile */}
-            <Box sx={{ display: { xs: "block", md: "none" } }}>
-              <Button onClick={() => setMobileMode("contacts")}>
-                <ArrowBackIcon />
-              </Button>
-            </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <IconButton sx={{ display: { xs: "block", sm: "none" } }} onClick={() => setShowContacts(true)}>
+              <MenuIcon sx={{ color: "#fff" }} />
+            </IconButton>
 
-            <Typography>Xabarlar</Typography>
+            {userFor && (
+              <Avatar
+                src={userFor?.imgProfile ? userFor.imgProfile : undefined}
+                alt={userFor?.name}
+                sx={{
+                  width: { xs: 50, sm: 60 },
+                  height: { xs: 50, sm: 60 },
+                  fontSize: { xs: 18, sm: 22 },
+                  fontWeight: 700,
+                  backgroundColor: userFor?.imgProfile ? "transparent" : "#555",
+                  color: "#fff",
+                  border: "3px solid #fff",
+                  "&:hover": { transform: "scale(1.1)" },
+                  transition: "0.3s",
+                }}
+              >
+                {!userFor?.imgProfile && getInitials(userFor?.name)}
+              </Avatar>
+            )}
+
+            <Typography color="#fff" fontWeight={700} sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}>
+              {userFor?.name} {userFor?.lastName}
+            </Typography>
           </Box>
 
-          <Button onClick={handleClick}>
-            <DehazeIcon />
-          </Button>
-
-          <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-            <MenuItem onClick={handleClear}>
-              <CloseIcon /> Shatti tazalaw
-            </MenuItem>
-            <MenuItem onClick={handleDelete}>
-              <DeleteIcon /> Shatti oshiriw
-            </MenuItem>
-          </Menu>
+          <Box>
+            <IconButton onClick={handleClick} sx={{ color: "#fff" }}>
+              <DehazeIcon />
+            </IconButton>
+            <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+              <MenuItem onClick={handleClear}><CloseIcon /> Shatti tazalaw</MenuItem>
+              <MenuItem onClick={handleDelete}><DeleteIcon /> Shatti oshiriw</MenuItem>
+            </Menu>
+          </Box>
         </Box>
 
-        <Box sx={{
-          flexGrow: 1,
-          overflowY: "auto",
-          padding: "1rem",
-          paddingBottom: "90px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.7rem"
-        }}>
+        {/* Messages */}
+        <Box sx={{ flexGrow: 1, overflowY: "auto", p: 2, display: "flex", flexDirection: "column", gap: 1 }}>
           {messages.map(m => {
             const isMe = m.senderId === me?._id;
             return (
               <Box key={m._id} sx={{
                 alignSelf: isMe ? "flex-end" : "flex-start",
-                backgroundColor: isMe ? "#81FBB8" : "#fff",
-                padding: "10px 14px",
-                borderRadius: isMe ? "15px 15px 0 15px" : "15px 15px 15px 0",
-                maxWidth: "70%"
-              }}>
-                {m.text}
-              </Box>
+                background: isMe ? "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)" : "#f0fdf4",
+                color: isMe ? "#fff" : "#1a1a1a",
+                p: "12px 16px",
+                maxWidth: "70%",
+                borderRadius: isMe ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
+                wordBreak: "break-word",
+                transition: "0.3s",
+              }}>{m.text}</Box>
             );
           })}
         </Box>
 
-        {/* input area */}
-        <Box sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: "1rem",
-          padding: "1rem",
-          borderTop: "1px solid #e5e5e5",
-          backgroundColor: "#fff"
-        }}>
-          <TextField
-            fullWidth
-            placeholder="Xabar jiberiw..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-          />
-          <Button onClick={handleSend} variant="contained">
-            <SendIcon />
+        {/* Input */}
+        <Box sx={{ display: "flex", gap: 1, p: 2, background: "#fff", borderTop: "1px solid #e0e0e0" }}>
+          <TextField fullWidth placeholder="Xabar jiberiw..." value={newMessage} onChange={(e) => setNewMessage(e.target.value)} sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }} />
+          <Button variant="contained" onClick={handleSend} sx={{ backgroundColor: "#22c55e", "&:hover": { backgroundColor: "#16a34a", transform: "scale(1.05)" }, borderRadius: 3 }}>
+            <SendIcon sx={{ color: "#fff" }} />
           </Button>
         </Box>
-
       </Box>
-
     </Container>
   );
 };

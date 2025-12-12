@@ -22,7 +22,6 @@ const Create = ({ change, render }) => {
         }
       })
       .catch((err) => {
-        console.log(err);
         const msg = err.response?.data?.message;
         toast.error(msg || "Serverde qatelik");
       });
@@ -34,88 +33,148 @@ const Create = ({ change, render }) => {
   }
 
   return (
-    <>
-      {/* OVERLAY */}
+    <Box
+      sx={{
+        position: "fixed",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        backdropFilter: "blur(6px)",
+        backgroundColor: "rgba(0, 0, 0, 0.45)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 9999,
+        p: 2,
+      }}
+    >
       <Box
         sx={{
-          position: "fixed",
-          inset: 0,
+          p: { xs: 3, sm: 4 },
+          borderRadius: "1.4rem",
           width: "100%",
-          height: "100%",
-          backgroundColor: "rgba(0, 0, 0, 0.6)",
+          maxWidth: { xs: "92%", sm: 420 },
+          background:
+            "linear-gradient(135deg, rgba(255,255,255,0.92), rgba(245,245,245,0.88))",
+          boxShadow: "0 15px 35px rgba(0,0,0,0.20)",
+          backdropFilter: "blur(10px)",
           display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: 9999,
-          p: 2,
+          flexDirection: "column",
+          gap: "1.7rem",
+          animation: "fadeIn 0.25s ease",
         }}
       >
-        {/* MODAL */}
+        {/* HEADER */}
         <Box
           sx={{
-            p: { xs: 2, sm: 3, md: 4 },
-            width: { xs: "90%", sm: "400px", md: "450px" },
-            borderRadius: 2,
-            backgroundColor: "#fff",
             display: "flex",
-            flexDirection: "column",
-            gap: "1.5rem",
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
-          {/* TITLE + CLOSE */}
-          <Box
+          <Typography
+            variant="h5"
             sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexDirection: "row", // har doim row bo'lsin
-              gap: "0.5rem",
+              fontSize: { xs: "1.4rem", sm: "1.8rem" },
+              fontWeight: 700,
+              letterSpacing: "0.5px",
             }}
           >
-            <Typography variant="h5" sx={{ textAlign: "center", flexGrow: 1 }}>
-              Akkount jaratıw
-            </Typography>
+            Akkount jaratıw
+          </Typography>
 
-            <Button onClick={() => change(false)} sx={{ color: "#555" }}>
-              X
-            </Button>
-          </Box>
-
-
-          {/* FORM */}
-          <form
-            onSubmit={handleSubmit}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "1rem",
-              width: "100%",
+          <Button
+            onClick={() => change(false)}
+            sx={{
+              minWidth: "36px",
+              color: "#222",
+              fontWeight: 700,
+              fontSize: "1.2rem",
+              backgroundColor: "rgba(0,0,0,0.06)",
+              borderRadius: "50%",
+              width: 36,
+              height: 36,
+              "&:hover": {
+                backgroundColor: "rgba(0,0,0,0.15)",
+              },
             }}
           >
-            <TextField
-              fullWidth
-              label="email address"
-              onChange={(e) => setValue(e.target.value)}
-              type="email"
-            />
+            ×
+          </Button>
+        </Box>
 
-            <Button
-              type="submit"
-              variant="contained"
-              sx={{ color: "#fff", width: "100%" }}
-              fullWidth
-            >
-              Jaratıw
-            </Button>
-          </form>
+        {/* FORM */}
+        <form
+          onSubmit={handleSubmit}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "1.3rem",
+            width: "100%",
+          }}
+        >
+          <TextField
+            fullWidth
+            label="Email address"
+            type="email"
+            variant="outlined"
+            onChange={(e) => setValue(e.target.value)}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "0.9rem",
+              },
+            }}
+          />
 
-          {/* CHANGE TO LOGIN */}
-          <Button onClick={openAnother} fullWidth>
+          <Button
+            type="submit"
+            variant="contained"
+            sx={{
+              py: 1.3,
+              fontSize: "1rem",
+              borderRadius: "0.9rem",
+              fontWeight: 600,
+              backgroundColor: "#22c55e",
+              boxShadow: "0 4px 12px rgba(34,197,94,0.4)",
+              "&:hover": {
+                backgroundColor: "#16a34a",
+                boxShadow: "0 6px 16px rgba(22,163,74,0.45)",
+              },
+            }}
+          >
+            Jaratıw
+          </Button>
+        </form>
+
+        {/* LOGIN LINK */}
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <Button
+            onClick={openAnother}
+            sx={{
+              textTransform: "none",
+              fontSize: "1rem",
+              color: "#22c55e",
+              fontWeight: 600,
+              "&:hover": {
+                color: "#16a34a",
+              },
+            }}
+          >
             Akkountıma kiriw!
           </Button>
         </Box>
       </Box>
-    </>
+
+      {/* ANIMATION */}
+      <style>
+        {`
+          @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+          }
+        `}
+      </style>
+    </Box>
   );
 };
 

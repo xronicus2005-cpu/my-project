@@ -12,7 +12,7 @@ const Profile = () => {
     <>
       <HeaderUser/>
       <Jobs/>
-      <Advert/>
+      
       <PersonInfo/>
       <Portfolio/>
       <Work/>

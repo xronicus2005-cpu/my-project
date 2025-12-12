@@ -29,7 +29,7 @@
   font-weight: 800;
   font-size: 55px;
   text-decoration: none;
-  color: #4CAF50;
+  color: #22c55e;
   white-space: nowrap;
 }
 
@@ -78,7 +78,7 @@
   flex-direction: column;
   gap: 15px;
   padding: 15px 25px;
-  border-top: 1px solid #ccc;
+  border-top: 1px solid #ccc; 
 }
 
 /* Menu links */
@@ -116,6 +116,10 @@
 
   .mobile-menu-toggle {
     display: block;
+    position: absolute;
+    
+    right: 0;
+    
   }
 
   .desktop-avatar {
@@ -135,4 +139,42 @@
     gap: 10px;
     flex-wrap: nowrap;
   }
+}
+
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: red;
+  color: white;
+  width: 18px;
+  height: 18px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mail-icon-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+
+.menu-flex {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.menu-icon {
+  font-size: 22px;
+  color: #2E7D32;
+}
+
+.logout-red {
+  color: red;
 }

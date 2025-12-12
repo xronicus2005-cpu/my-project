@@ -20,12 +20,12 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 const selectStyle = {
-  backgroundColor: "inherit",
-  color: "#555",
-  borderRadius: "10px",
+  backgroundColor: "white",
+  borderRadius: "12px",
   fontSize: "1rem",
-  padding: "0.3rem",
-  minWidth: "150px",
+  padding: "0.5rem",
+  width: "100%",
+  border: "1px solid #ccc",
 };
 
 const UpdateJobs = () => {
@@ -80,7 +80,7 @@ const UpdateJobs = () => {
         setProfession(workData.workType?.profession || "");
 
         if (workData.imgWork) {
-          setPhoto(`${import.meta.env.VITE_SERVER_URL}/uploads/works/${workData.imgWork}`);
+          setPhoto(workData.imgWork);
         }
 
         setLoading(false);
@@ -94,6 +94,7 @@ const UpdateJobs = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
+
     if (file) {
       setPhoto(URL.createObjectURL(file));
       setValue({ ...value, imgWork: file });
@@ -102,39 +103,53 @@ const UpdateJobs = () => {
 
   if (loading) return <Typography sx={{ mt: 5 }}>loading...</Typography>;
 
-  const updateJobs = (e) => {
+  const updateJobs = async(e) => {
+
     e.preventDefault();
 
-    const formData = new FormData();
+    try{
 
-    formData.append("title", value.title);
-    formData.append("niche", value.workType.niche);
-    formData.append("profession", value.workType.profession);
-    formData.append("infoWork", value.infoWork);
-    formData.append("buyersMust", value.buyersMust);
-    formData.append("cost", value.cost);
-    if (value.imgWork) formData.append("imgWork", value.imgWork);
+      // RASM O'ZGARITILGANINI TEKSHIRISH
+      let imgUrl = value.imgWork;
 
-    api
-      .put(`/updateWork/${id}`, formData, {
-        headers: {
-          "x-auth-token": localStorage.getItem("token"),
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then((res) => {
-        if (res.data.message === "Janalandi") {
-          toast.success("Janalandi");
-          navigate("/Profile");
-        }
-      })
-      .catch((err) => {
-        const msg = err.response?.data?.message;
-        if (msg) {
-          toast.error(msg || "Serverde qatelik boldi");
-        }
+      // Agar value.imgWork file bo'lsa (ya'ni foydalanuvchi yangi rasm yuklagan bo'lsa)
+      if (value.imgWork && value.imgWork instanceof File) {
+
+        const imgData = new FormData();
+        imgData.append("file", value.imgWork);
+        imgData.append("folder", "Jobs");
+
+        const uploadRes = await api.post("/upload", imgData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+
+        imgUrl = uploadRes.data.url;
+      }
+
+      // value.imgWork ni final URL bilan yangilaymiz
+      const sendData = {
+        ...value,
+        imgWork: imgUrl
+      };
+
+      const updateRes = await api.put(`/updateWork/${id}`, sendData, {
+        headers: { "x-auth-token": localStorage.getItem("token") }
       });
+
+      if(updateRes.data.message === "Janalandi"){
+        toast.success("Janalandi");
+        navigate("/Profile");
+      }
+
+    }
+    catch(err){
+      console.log(err);
+      const msg = err.response?.data?.message;
+      toast.error(msg || "Serverde qatelik");
+    }
+
   };
+
 
   const deleteJob = () => {
     api
@@ -159,7 +174,7 @@ const UpdateJobs = () => {
       <Jobs />
 
       <Container sx={{ mt: 4 }}>
-        <Typography variant="h4">Jumıstı jańalaw</Typography>
+        
       </Container>
 
       <Container
@@ -185,22 +200,35 @@ const UpdateJobs = () => {
               maxWidth: "650px",
               backgroundColor: "#fff",
               p: { xs: 2, sm: 3, md: 4 },
-              borderRadius: "1rem",
+              borderRadius: "20px",
               display: "flex",
               flexDirection: "column",
-              gap: "1.2rem",
+              gap: "1.4rem",
+              boxShadow:
+                "0 10px 25px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.1)",
+              animation: "fadeIn 0.3s ease",
             }}
           >
+            <Typography variant="h4" fontWeight={700}>
+              Jumıstı jańalaw
+            </Typography>
             {/* Title */}
-            <label>
-              Jumıs atı:
+            <Box>
+              <Typography sx={{ mb: 1, color: "#444", fontWeight: 500 }}>
+                Jumıs atı:
+              </Typography>
               <TextField
                 fullWidth
                 label="ati"
                 value={value.title}
                 onChange={(e) => setValue({ ...value, title: e.target.value })}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "12px",
+                  },
+                }}
               />
-            </label>
+            </Box>
 
             {/* Work Type */}
             <Box
@@ -208,7 +236,6 @@ const UpdateJobs = () => {
                 display: "flex",
                 flexDirection: { xs: "column", sm: "row" },
                 gap: 2,
-                alignItems: "stretch",
               }}
             >
               <Select
@@ -257,105 +284,144 @@ const UpdateJobs = () => {
             </Box>
 
             {/* Photo */}
-            <label htmlFor="choose">
-              Jumıs obloshkasın saylaw:
-              <Box
-                sx={{
-                  width: "100%",
-                  maxWidth: "300px",
-                  height: { xs: "200px", sm: "250px" },
-                  border: "solid 0.2px #555",
-                  borderRadius: "0.5rem",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  mt: 1,
-                }}
-              >
-                {photo ? (
-                  <img
-                    src={photo}
-                    alt="photo"
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                ) : (
-                  <span style={{ fontSize: "3rem", color: "#777" }}>+</span>
-                )}
+            <Box>
+              <Typography sx={{ mb: 1, fontWeight: 500, color: "#444" }}>
+                Jumıs obloshkasın saylaw:
+              </Typography>
 
-                <input
-                  type="file"
-                  id="choose"
-                  style={{ display: "none" }}
-                  accept="image/*"
-                  onChange={handleFileChange}
-                />
-              </Box>
-            </label>
+              <label htmlFor="choose">
+                <Box
+                  sx={{
+                    width: "100%",
+                    maxWidth: "320px",
+                    height: { xs: "200px", sm: "250px" },
+                    border: "2px dashed #999",
+                    borderRadius: "14px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    overflow: "hidden",
+                    cursor: "pointer",
+                    transition: "0.3s",
+                    backgroundColor: "#fafafa",
+                    "&:hover": {
+                      borderColor: "#22c55e",
+                      transform: "scale(1.02)",
+                    },
+                  }}
+                >
+                  {photo ? (
+                    <img
+                      src={photo}
+                      alt="photo"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: "3rem", color: "#777" }}>+</span>
+                  )}
+                </Box>
+              </label>
+
+              <input
+                type="file"
+                id="choose"
+                style={{ display: "none" }}
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+            </Box>
 
             {/* Info */}
-            <label>
-              Jumıs haqqında informaciya:
+            <Box>
+              <Typography sx={{ mb: 1, color: "#444", fontWeight: 500 }}>
+                Jumıs haqqında informaciya:
+              </Typography>
               <textarea
                 value={value.infoWork}
-                onChange={(e) => setValue({ ...value, infoWork: e.target.value })}
+                onChange={(e) =>
+                  setValue({ ...value, infoWork: e.target.value })
+                }
                 style={{
                   width: "100%",
                   height: "5rem",
-                  padding: "0.5rem",
+                  padding: "0.8rem",
                   fontSize: "1rem",
+                  borderRadius: "12px",
+                  border: "1px solid #ccc",
                 }}
               ></textarea>
-            </label>
+            </Box>
 
             {/* Buyers Must */}
-            <label>
-              Jallawshılardan talap etiledi:
+            <Box>
+              <Typography sx={{ mb: 1, color: "#444", fontWeight: 500 }}>
+                Jallawshılardan talap etiledi:
+              </Typography>
               <textarea
                 value={value.buyersMust}
-                onChange={(e) => setValue({ ...value, buyersMust: e.target.value })}
+                onChange={(e) =>
+                  setValue({ ...value, buyersMust: e.target.value })
+                }
                 style={{
                   width: "100%",
                   height: "5rem",
-                  padding: "0.5rem",
+                  padding: "0.8rem",
                   fontSize: "1rem",
+                  borderRadius: "12px",
+                  border: "1px solid #ccc",
                 }}
               ></textarea>
-            </label>
+            </Box>
 
             {/* Cost */}
-            <Box sx={{ display: "flex", flexDirection: "column", mt: 2 }}>
-              <label>Jumıs bahası</label>
-              <FormControl fullWidth sx={{ mt: 1 }}>
-                <InputLabel htmlFor="outlined-adornment-amount">Baha</InputLabel>
+            <Box sx={{ display: "flex", flexDirection: "column", mt: 1 }}>
+              <Typography sx={{ mb: 1, color: "#444", fontWeight: 500 }}>
+                Jumıs bahası:
+              </Typography>
+
+              <FormControl fullWidth>
+                <InputLabel>Baha</InputLabel>
                 <OutlinedInput
-                  id="outlined-adornment-amount"
                   endAdornment={<InputAdornment position="end">(sum)</InputAdornment>}
                   label="Baha"
                   value={value.cost}
                   onChange={(e) => setValue({ ...value, cost: e.target.value })}
+                  sx={{ borderRadius: "12px" }}
                 />
               </FormControl>
             </Box>
 
-            {/* Buttons */}
+            {/* DELETE */}
             <Button
               type="button"
               onClick={deleteJob}
               sx={{
                 color: "red",
                 width: "100%",
-                mt: 1,
+                fontWeight: 700,
+                fontSize: "1rem",
               }}
             >
               Óshiriw
             </Button>
 
+            {/* UPDATE */}
             <Button
               type="submit"
               variant="contained"
               sx={{
                 color: "#fff",
-                width: "100%",
+                backgroundColor: "#22c55e",
+                padding: "0.8rem",
+                fontWeight: 600,
+                borderRadius: "12px",
+                "&:hover": {
+                  backgroundColor: "#16a34a",
+                },
               }}
             >
               Jańalaw

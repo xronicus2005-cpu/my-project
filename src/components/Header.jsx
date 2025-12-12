@@ -5,25 +5,32 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Enter from "./Enter";
 import Create from "./Create";
+
 import { Menu, Avatar, Button, IconButton } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import MenuIcon from "@mui/icons-material/Menu";
+
+// YANGI ICON IMPORTLARI
+import PersonIcon from "@mui/icons-material/Person";
+import SettingsIcon from "@mui/icons-material/Settings";
+import LogoutIcon from "@mui/icons-material/Logout";
+
 import "./styles/Header.css";
 
 const Header = () => {
   const { logout, user, loading } = useAuth();
   const [render, setRender] = useState(false);
   const [create, setCreate] = useState(false);
-  const [notOpen, willOpen] = useState(null);
+  const [notOpen, setNotOpen] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const open = Boolean(notOpen);
-  const handleClick = (event) => willOpen(event.currentTarget);
-  const handleClose = () => willOpen(null);
+  const handleClick = (event) => setNotOpen(event.currentTarget);
+  const handleClose = () => setNotOpen(null);
 
   const colors = ["#37474F", "#9C27B0", "#00BCD4", "#FF7043", "#e91e63", "#2E7D32"];
   let currentColorOfAvatar = null;
-  if (user?.sex === "erkek") currentColorOfAvatar = colors[5];
+  if (user?.sex === "erkek") currentColorOfAvatar = colors[0];
   else if (user?.sex === "hayal") currentColorOfAvatar = colors[4];
 
   useEffect(() => {
@@ -35,7 +42,7 @@ const Header = () => {
   if (loading) {
     return (
       <div className="header-loading">
-        <p>Tekshirilmoqda...</p>
+        <p>Loading...</p>
       </div>
     );
   }
@@ -66,22 +73,15 @@ const Header = () => {
             <div className="desktop-buttons">
               <Button
                 onClick={() => setRender(true)}
-                sx={{
-                  backgroundColor: "#fff",
-                  color: "#4CAF50",
-                  border: "2px solid #4CAF50",
-                  "&:hover": {
-                    backgroundColor: "#4CAF50",
-                    color: "#fff",
-                  }
-                }}
+                sx={{border: "2px solid #22c55e"}}
               >
                 Kiriw
               </Button>
 
               <Button
                 onClick={() => setCreate(true)}
-                sx={{ backgroundColor: "#4CAF50", color: "#fff" }}
+                color="primary"
+                variant="contained"
               >
                 Jaratıw
               </Button>
@@ -97,10 +97,8 @@ const Header = () => {
               </Avatar>
             </button>
 
-            {/* MOBILE: Avatar + MenuIcon (yonma-yon) */}
+            {/* MOBILE: Avatar + MenuIcon */}
             <div className="mobile-right">
-              
-              {/* Mobile Avatar */}
               <button onClick={handleClick} className="mobile-avatar-btn">
                 <Avatar
                   style={{ backgroundColor: currentColorOfAvatar }}
@@ -110,17 +108,15 @@ const Header = () => {
                 </Avatar>
               </button>
 
-              {/* Mobile Menu Toggle */}
               <IconButton onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-                <MenuIcon fontSize="large" />
+                <MenuIcon fontSize="large" style={{marginRight: "5px"}}/>
               </IconButton>
-
             </div>
 
           </div>
         </div>
 
-        {/* DROPDOWN — Avatar menusı */}
+        {/* DROPDOWN — Avatar menu */}
         <Menu
           anchorEl={notOpen}
           open={open}
@@ -128,31 +124,40 @@ const Header = () => {
           anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
           transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
-          <Link onClick={handleClose} className="menu-link" to="/Profile">Profilim</Link>
-          <Link onClick={handleClose} className="menu-link" to="/Settings">Sazlamalar</Link>
-          <div onClick={logout} className="menu-link logout-link">Shıǵıw</div>
+          <Link onClick={handleClose} className="menu-link menu-item-flex" to="/Profile">
+            <PersonIcon className="menu-icon" />
+            <span>Profilim</span>
+          </Link>
+
+          <Link onClick={handleClose} className="menu-link menu-item-flex" to="/Settings">
+            <SettingsIcon className="menu-icon" />
+            <span>Sazlamalar</span>
+          </Link>
+
+          <div onClick={logout} className="menu-link logout-link menu-item-flex">
+            <LogoutIcon className="menu-icon logout-icon" />
+            <span>Shıǵıw</span>
+          </div>
         </Menu>
 
         {/* MOBILE MENU */}
         {mobileMenuOpen && (
           <div className="mobile-menu">
-
             <Button
               onClick={() => { setRender(true); setMobileMenuOpen(false); }}
-              sx={{ backgroundColor: "#4CAF50", color: "#fff" }}
+              sx={{border: "2px solid #22c55e"}}
             >
               Kiriw
             </Button>
 
             <Button
               onClick={() => { setCreate(true); setMobileMenuOpen(false); }}
-              className="header-btn create-btn"
+              variant="contained"
             >
               Jaratıw
             </Button>
           </div>
         )}
-
       </header>
     </>
   );

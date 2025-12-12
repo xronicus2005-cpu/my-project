@@ -2,78 +2,72 @@ import { useEffect, useState } from "react";
 import { Container, Typography, Box } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import CreateIcon from "@mui/icons-material/Create";
-import Rating from '@mui/material/Rating';
+import Rating from "@mui/material/Rating";
 import { Link } from "react-router-dom";
 import { api } from "../api/axios";
 
 const useStyles = makeStyles({
   card: {
-    width: "100%", // grid ichida 100% egallaydi
-    height: "350px",
-    borderRadius: "0.5rem",
+    width: "100%",
+    borderRadius: "18px",
     position: "relative",
     overflow: "hidden",
-    boxShadow: "5px 15px 15px 5px rgba(0, 0, 0, 0.2)",
-    backgroundColor: "#fff",
+    backgroundColor: "#ffffff",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.12)",
     transition: "transform 0.3s ease, box-shadow 0.3s ease",
+    cursor: "pointer",
+    display: "flex",
+    flexDirection: "column",
+    "&:hover": {
+      transform: "translateY(-6px)",
+      boxShadow: "0 15px 35px rgba(0,0,0,0.22)",
+    },
     "&:hover $overlayTop": {
       opacity: 1,
       transform: "translateY(0)",
     },
-    "&:hover $overlayBottom": {
-      opacity: 1,
-      transform: "translateY(0)",
-    },
   },
+
   image: {
     width: "100%",
-    height: "50%",
+    height: "220px",
     objectFit: "cover",
   },
+
   overlayTop: {
     position: "absolute",
     top: 0,
-    left: 0,
+    right: 0,
     width: "100%",
-    height: "2.5rem",
-    backgroundColor: "rgba(179, 188, 144, 0.76)",
+    height: "50px",
+    backgroundColor: "rgba(0,0,0,0.45)",
     display: "flex",
-    alignItems: "center",
     justifyContent: "flex-end",
-    gap: "0.5rem",
-    padding: "0.5rem",
-    opacity: 0,
-    transition: "all 0.3s ease",
-  },
-  overlayBottom: {
-    position: "absolute",
-    bottom: "50%",
-    left: 0,
-    width: "100%",
-    height: "2.5rem",
-    backgroundColor: "rgba(179, 188, 144, 0.76)",
-    display: "flex",
     alignItems: "center",
-    justifyContent: "center",
-    color: "#fff",
+    padding: "0 1rem",
     opacity: 0,
     transition: "all 0.3s ease",
   },
+
   addCard: {
     width: "100%",
-    height: "350px",
-    border: "solid 0.2px #555",
-    borderRadius: "0.5rem",
+    height: "220px",
+    borderRadius: "18px",
+    border: "2px dashed #888",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     fontSize: "4rem",
-    fontWeight: 100,
-    color: "#555",
+    fontWeight: 300,
+    color: "#777",
     textDecoration: "none",
-    transition: "transform 0.3s ease",
+    transition: "all 0.3s ease",
+    backgroundColor: "#fafafa",
     "&:hover": {
       transform: "scale(1.05)",
+      borderColor: "#22c55e",
+      color: "#22c55e",
+      backgroundColor: "#f0fff4",
     },
   },
 });
@@ -100,8 +94,10 @@ const Work = () => {
 
   return (
     <>
-      <Container sx={{ marginTop: "2rem" }}>
-        <Typography variant="h4">Jumıslarım</Typography>
+      <Container sx={{ marginTop: "7rem" }}>
+        <Typography variant="h4" fontWeight={700}>
+          Jumıslarım
+        </Typography>
       </Container>
 
       <Container
@@ -109,61 +105,88 @@ const Work = () => {
           marginTop: "2rem",
           display: "grid",
           gridTemplateColumns: {
-            xs: "1fr", // mobil
-            sm: "1fr 1fr", // kichik ekran
-            md: "repeat(3, 1fr)", // desktop
+            xs: "1fr",
+            sm: "1fr 1fr",
+            md: "repeat(3, 1fr)",
           },
-          gap: 2, // kartalar orasidagi bo'shliq
+          gap: 3,
         }}
       >
-        {/* Yangi work yaratish */}
         <Link to="/Profile/CreateWork" className={classes.addCard}>
           +
         </Link>
 
-        {/* Backenddan kelgan works */}
         {works.map((w) => (
           <Box key={w._id} className={classes.card}>
             <img
-              src={w.imgWork ? `${import.meta.env.VITE_SERVER_URL}/uploads/works/${w.imgWork}` : "https://placehold.co/300x250"}
+              src={
+                w.imgWork
+                  ? w.imgWork
+                  : "https://placehold.co/300x250"
+              }
               alt={w.title}
               className={classes.image}
             />
 
+            {/* Overlay */}
             <Box className={classes.overlayTop}>
               <Link
-                size="small"
-                style={{ display: "inline-block", marginLeft: "1rem", color: "#555", marginTop: "0.5rem" }}
                 to={`/updateJobs/${w._id}`}
+                style={{
+                  color: "#fff",
+                  backgroundColor: "rgba(255,255,255,0.3)",
+                  padding: "4px",
+                  borderRadius: "6px",
+                }}
               >
                 <CreateIcon />
               </Link>
             </Box>
 
-            <Box className={classes.overlayBottom}></Box>
-
-            <Box sx={{ display: "flex", flexDirection: "column", padding: "0rem 1rem" }}>
-              <Typography variant="h5">{w.title}</Typography>
-              <Typography sx={{ color: "#999", fontSize: "0.9rem" }}>{w.workType?.niche}</Typography>
-              <Typography>{w.workType?.profession}</Typography>
-              <Typography sx={{ fontWeight: "800", color: "green" }}>{w.cost} sum</Typography>
+            {/* Content */}
+            <Box
+              sx={{
+                padding: "1rem",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                minHeight: "160px",
+              }}
+            >
               <Box>
-                <Rating name="read-only" value={Math.floor(w.rating || 0)} readOnly />
+                <Typography variant="h6" fontWeight={700}>
+                  {w.title}
+                </Typography>
+
+                <Typography sx={{ color: "#777", fontSize: "0.9rem" }}>
+                  {w.workType?.niche}
+                </Typography>
+
+                <Typography sx={{ fontSize: "0.95rem", fontWeight: 500 }}>
+                  {w.workType?.profession}
+                </Typography>
+
+                <Typography
+                  sx={{
+                    marginTop: "0.5rem",
+                    fontWeight: 800,
+                    color: "#22c55e",
+                    fontSize: "1.1rem",
+                  }}
+                >
+                  {w.cost} sum
+                </Typography>
               </Box>
+
+              <Rating
+                name="read-only"
+                value={Math.floor(w.rating || 0)}
+                readOnly
+                sx={{ marginTop: "0.6rem" }}
+              />
             </Box>
           </Box>
         ))}
-      </Container>
-
-      <Container
-        sx={{
-          backgroundColor: "#fff",
-          marginTop: "2rem",
-          p: 4,
-          borderRadius: "1rem",
-        }}
-      >
-        <Typography variant="h4">Pikirler:</Typography>
       </Container>
     </>
   );
