@@ -30,7 +30,6 @@ const Chat = () => {
   useEffect(() => {
     const socket = io(import.meta.env.VITE_SERVER_URL, {
       withCredentials: true,
-      extraHeaders: { token: localStorage.getItem("token") },
     });
     setConnection(socket);
     return () => socket.disconnect();
@@ -41,9 +40,9 @@ const Chat = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const meRes = await api.get("/me", { headers: { "x-auth-token": localStorage.getItem("token") } });
+        const meRes = await api.get("/me");
         setMe(meRes.data);
-        const allConv = await api.get("/getAll", { headers: { "x-auth-token": localStorage.getItem("token") } });
+        const allConv = await api.get("/getAll");
         setConversations(dedupeById(allConv.data?.conversations || []));
       } catch (err) { console.log(err); }
     };
@@ -57,7 +56,7 @@ const Chat = () => {
 
     const createConv = async () => {
       try {
-        const res = await api.post(`/getOrCreate/${id}`, {}, { headers: { "x-auth-token": localStorage.getItem("token") } });
+        const res = await api.post(`/getOrCreate/${id}`, {});
         const conv = res.data.conversation;
         if (!conv) return;
         setConversations(prev => dedupeById([...prev, conv]));
@@ -73,7 +72,7 @@ const Chat = () => {
     if (!active) return;
     const fetchMessages = async () => {
       try {
-        const res = await api.get(`/messages/${active}`, { headers: { "x-auth-token": localStorage.getItem("token") } });
+        const res = await api.get(`/messages/${active}`);
         setMessages(dedupeById(res.data.messages || []));
       } catch (err) { console.log(err); }
     };
@@ -102,7 +101,7 @@ const Chat = () => {
     if (!activeUser) return;
     const getActiveUser = async() => {
       try {
-        const userRes = await api.get(`/userFor/${activeUser}`, { headers: { "x-auth-token": localStorage.getItem("token") } });
+        const userRes = await api.get(`/userFor/${activeUser}`);
         setUserFor(userRes.data.user);
       } catch(err) { console.log(err); }
     }
@@ -113,9 +112,7 @@ const Chat = () => {
     if (!active) return;
     const markAsRead = async () => {
       try {
-        await api.put(`/messages/markAsRead/${active}`, {}, {
-          headers: { "x-auth-token": localStorage.getItem("token") },
-        });
+        await api.put(`/messages/markAsRead/${active}`, {});
         setUnreadCount(0); // badge ni reset qilish
       } catch (err) { console.log(err); }
     };
@@ -133,7 +130,7 @@ const Chat = () => {
     const yes = confirm("Chatti tazalawdi qaleysizbe?");
     if (!yes) return;
     try {
-      const res = await api.delete(`/clearMessages/${active}`, { headers: { "x-auth-token": localStorage.getItem("token") } });
+      const res = await api.delete(`/clearMessages/${active}`);
       if (res.data.message === "Tazalandi") { setMessages([]); toast.success("Tazalandi"); }
     } catch (err) { console.log(err); }
   };
@@ -143,7 +140,7 @@ const Chat = () => {
     const yes = confirm("Chatti oshiriwdi qaleysizbe?");
     if (!yes) return;
     try {
-      const res = await api.delete(`/deleteConversation/${active}`, { headers: { "x-auth-token": localStorage.getItem("token") } });
+      const res = await api.delete(`/deleteConversation/${active}`);
       if (res.data.message === "Oshirildi") {
         setConversations(prev => prev.filter(c => c._id !== active));
         setActive(null);

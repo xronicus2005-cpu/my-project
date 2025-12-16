@@ -37,22 +37,16 @@ const JobDetails = () => {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const res = await api.get(`/getJob/${id}`, {
-          headers: { "x-auth-token": localStorage.getItem("token") },
-        });
+        const res = await api.get(`/getJob/${id}`);
         setJob(res.data.job);
 
         const userId = res.data.job.userId._id;
         setuId(userId);
 
-        const userRes = await api.get(`/getUser/${userId}`, {
-          headers: { "x-auth-token": localStorage.getItem("token") },
-        });
+        const userRes = await api.get(`/getUser/${userId}`);
         setUser(userRes.data.user);
 
-        const workRes = await api.get(`/getUserWorks/${userId}`, {
-          headers: { "x-auth-token": localStorage.getItem("token") },
-        });
+        const workRes = await api.get(`/getUserWorks/${userId}`);
         setWork(workRes.data.works);
       } catch (err) {
         setError("Serverde qatelik yamasa siz kirgen emessiz");

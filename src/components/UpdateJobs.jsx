@@ -58,9 +58,7 @@ const UpdateJobs = () => {
   useEffect(() => {
     const fetchWork = async () => {
       try {
-        const res = await api.get(`/works/${id}`, {
-          headers: { "x-auth-token": localStorage.getItem("token") },
-        });
+        const res = await api.get(`/works/${id}`);
 
         const workData = res.data.work;
 
@@ -132,9 +130,7 @@ const UpdateJobs = () => {
         imgWork: imgUrl
       };
 
-      const updateRes = await api.put(`/updateWork/${id}`, sendData, {
-        headers: { "x-auth-token": localStorage.getItem("token") }
-      });
+      const updateRes = await api.put(`/updateWork/${id}`, sendData);
 
       if(updateRes.data.message === "Janalandi"){
         toast.success("Janalandi");
@@ -153,9 +149,7 @@ const UpdateJobs = () => {
 
   const deleteJob = () => {
     api
-      .delete(`/deleteWork/${id}`, {
-        headers: { "x-auth-token": localStorage.getItem("token") },
-      })
+      .delete(`/deleteWork/${id}`)
       .then((res) => {
         if (res.data.message === "Oshirildi") {
           toast.success("Oshirildi");

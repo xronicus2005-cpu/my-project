@@ -79,11 +79,7 @@ const Work = () => {
   useEffect(() => {
     const getWorks = async () => {
       try {
-        const res = await api.get("/works", {
-          headers: {
-            "x-auth-token": localStorage.getItem("token"),
-          },
-        });
+        const res = await api.get("/works")
         setWorks(res.data.works || []);
       } catch (err) {
         console.log(err);

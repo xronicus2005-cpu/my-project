@@ -10,9 +10,7 @@ const People = ({ conversation, person, active, onClick }) => {
     const friendId = conversation.members.find(m => m !== person._id);
     const fetchFriend = async () => {
       try {
-        const res = await api.get(`/userFor/${friendId}`, {
-          headers: { "x-auth-token": localStorage.getItem("token") }
-        });
+        const res = await api.get(`/userFor/${friendId}`);
         setFriend(res.data.user);
       } catch (err) { console.log(err); }
     };

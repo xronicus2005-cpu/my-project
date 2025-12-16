@@ -88,32 +88,27 @@ const GetInfoFromUser = () => {
     setValue({ ...value, sex: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    api
-      .post("/enter/register", value)
-      .then((res) => {
-        const { token } = res.data;
-        if (!token) return toast.error("login yoki parol xato");
+    try {
+      // 1. Register (cookie backendda o‘rnatiladi)
+      await api.post("/enter/register", value);
 
-        localStorage.setItem("token", token);
+      // 2. User ma’lumotini olish (cookie avtomatik ketadi)
+      const res = await api.get("/me");
 
-        api
-          .get("/me", { headers: { "x-auth-token": token } })
-          .then((res) => {
-            localStorage.setItem("userInfo", JSON.stringify(res.data));
-            toast.success("Profil jaratildi");
-            navigate("/Profile");
-          })
-          .catch((err) => {
-            toast.error(err.response?.data?.message || "Server xatosi");
-          });
-      })
-      .catch((err) => {
-        toast.error(err.response?.data?.message || "Server xatosi");
-      });
+      // 3. User info’ni saqlash (ixtiyoriy)
+      localStorage.setItem("userInfo", JSON.stringify(res.data));
+
+      toast.success("Profil jaratildi");
+      navigate("/Profile");
+
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Serverde qatelik");
+    }
   };
+
 
   return (
     <Container maxWidth="sm" sx={{ mt: 6, mb: 6 }}>

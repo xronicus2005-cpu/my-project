@@ -4,6 +4,7 @@ import Jobs from "../components/Jobs";
 import { Container, Box, Button, Typography, Rating } from "@mui/material";
 import { Link } from "react-router-dom";
 import { api } from "../api/axios";
+import { useAuth } from "../hooksForBackend/useAuth";
 
 import Footer from "../components/Footer";
 
@@ -11,6 +12,8 @@ const IT = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+
+  
 
   const handleCategoryClick = async (category) => {
     setLoading(true);
@@ -20,7 +23,7 @@ const IT = () => {
       setJobs(res.data.jobs || []);
     } catch (err) {
       console.log(err);
-      setError("Serverda qatelik");
+      setError("Registraciyadan otin iltimas!");
     } finally {
       setLoading(false);
     }

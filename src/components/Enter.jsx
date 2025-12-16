@@ -8,38 +8,29 @@ const Enter = ({ change, create }) => {
   const [value, setValue] = useState({ login: "", password: "" });
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    api
-      .post("/auth", {
+    try {
+      await api.post("/auth", {
         login: value.login,
         password: value.password,
-      })
-      .then((res) => {
-        const { token } = res.data;
-
-        if (!token) {
-          return toast.error("login yamasa parol qate");
-        }
-
-        localStorage.setItem("token", token);
-
-        api
-          .get("/me", {
-            headers: { "x-auth-token": token },
-          })
-          .then((res) => {
-            localStorage.setItem("userInfo", JSON.stringify(res.data));
-            navigate("/Profile");
-          });
-      })
-      .catch((err) => {
-        const msg = err.response?.data?.message;
-        if (msg) toast.error(msg);
-        else toast.error("Server qatesi");
       });
+
+      // cookie avtomatik ketadi
+      const res = await api.get("/me");
+
+      // xohlasang state/contextga saqla
+      // localStorage shart emas
+      navigate("/Profile");
+
+    } catch (err) {
+      const msg = err.response?.data?.message;
+      if (msg) toast.error(msg);
+      else toast.error("Server qatesi");
+    }
   };
+
 
   function openAnotherWindow() {
     change(false);

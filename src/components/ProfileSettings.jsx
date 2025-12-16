@@ -61,9 +61,6 @@ const ProfileSettings = () => {
             info: value.info || user?.info,
             imgProfile: imgUrl || ""
           },
-          {
-            headers: {"x-auth-token": localStorage.getItem("token")}
-          }
         )
 
         if(saveRes.data.updated == true){
@@ -83,9 +80,6 @@ const ProfileSettings = () => {
             info: value.info || user?.info,
             imgProfile: user?.imgProfile || ""
           },
-          {
-            headers:{"x-auth-token": localStorage.getItem("token")}
-          }
         )
 
         if(elseRes.data.updated == true){

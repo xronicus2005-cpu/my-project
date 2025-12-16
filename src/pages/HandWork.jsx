@@ -19,7 +19,7 @@ const HandWork = () => {
       setJobs(res.data.jobs || []);
     } catch (err) {
       console.log(err);
-      setError("Serverda qatelik");
+      setError("Registraciyadan otin!");
     } finally {
       setLoading(false);
     }

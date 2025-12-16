@@ -113,11 +113,7 @@ const Portfolio = () => {
   useEffect(() => {
     const getPortfolio = async () => {
       try {
-        const res = await api.get("/myPortfolio", {
-          headers: {
-            "x-auth-token": localStorage.getItem("token")
-          },
-        });
+        const res = await api.get("/myPortfolio");
         setPortfolio(res.data.portfolio || []);
       } catch (err) {
         console.log(err);
@@ -128,11 +124,7 @@ const Portfolio = () => {
 
   const handleDelete = async (id) => {
     try {
-      const res = await api.delete(`/deletePortfolio/${id}`, {
-        headers: {
-          "x-auth-token": localStorage.getItem("token"),
-        },
-      });
+      const res = await api.delete(`/deletePortfolio/${id}`);
       if (res.data.message === "Oshirildi") {
         setPortfolio(prev => prev.filter(item => item._id !== id));
         toast.success("Oshirildi");

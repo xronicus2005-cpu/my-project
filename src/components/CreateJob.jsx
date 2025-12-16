@@ -17,6 +17,7 @@ import { api } from "../api/axios";
 import { useAuth } from "../hooksForBackend/useAuth";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const selectStyle = {
   backgroundColor: "#f9fafb",
@@ -51,9 +52,17 @@ const CreateJob = () => {
     infoWork: "",
     buyersMust: "",
     cost: "",
+    location: user?.address.city
   });
 
+  useEffect(() => {
+    if(user?.address?.city){
+      setValue(prev => ({...prev, location: user.address.city}))
+    }
+  }, [user])
+
   console.log(value)
+
 
   const handleNicheChange = (e) => {
     const newNiche = e.target.value;
@@ -105,7 +114,8 @@ const CreateJob = () => {
       const imgUrl = uploadRes.data.url
       value.imgWork = imgUrl
       
-      const saveRes = await api.post("/create", value, {headers: {"x-auth-token": localStorage.getItem("token")}})
+      
+      const saveRes = await api.post("/create", value)
 
       if(saveRes.data.message == "Jumis jaratildi"){
         toast.success("Jumis jaratildi")

@@ -85,7 +85,6 @@ const UserSettings = () => {
         },
         {
           headers: {
-            "x-auth-token": localStorage.getItem("token"),
             "Content-Type": "application/json",
           },
         }
@@ -110,9 +109,7 @@ const UserSettings = () => {
     const willDelete = confirm("Akkounti oshiriwge ruxsat beresizbe?");
     if (willDelete) {
       api
-        .delete(`/delete/${user._id}`, {
-          headers: { "x-auth-token": localStorage.getItem("token") },
-        })
+        .delete(`/delete/${user._id}`)
         .then((res) => {
           if (res.data.message === "Oshirildi") {
             toast.success("Akkount oshirildi");

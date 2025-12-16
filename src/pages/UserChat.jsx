@@ -42,10 +42,10 @@ const UserChat = () => {
   useEffect(() => {
     const fetchInitial = async () => {
       try {
-        const meRes = await api.get("/me", { headers: { "x-auth-token": localStorage.getItem("token") } });
+        const meRes = await api.get("/me",);
         setMe(meRes.data);
 
-        const convRes = await api.get("/getAll", { headers: { "x-auth-token": localStorage.getItem("token") } });
+        const convRes = await api.get("/getAll");
         setConversations(convRes.data?.conversations || []);
       } catch (err) { console.log(err); }
     };
@@ -63,7 +63,7 @@ const UserChat = () => {
     if (!active) return;
     const loadMessages = async () => {
       try {
-        const res = await api.get(`/messages/${active}`, { headers: { "x-auth-token": localStorage.getItem("token") } });
+        const res = await api.get(`/messages/${active}`);
         setMessages(res.data.messages);
       } catch (err) { console.log(err); }
     };
@@ -112,7 +112,7 @@ const UserChat = () => {
 
     const fetchUser = async () => {
       try {
-        const res = await api.get(`/userFor/${otherId}`, { headers: { "x-auth-token": localStorage.getItem("token") } });
+        const res = await api.get(`/userFor/${otherId}`);
         setUserFor(res.data.user);
       } catch (err) { console.log(err); }
     };
@@ -125,9 +125,7 @@ const UserChat = () => {
     // API orqali backendga: unreadCount = 0
     const markAsRead = async () => {
       try {
-        await api.put(`/messages/markAsRead/${active}`, {}, {
-          headers: { "x-auth-token": localStorage.getItem("token") },
-        });
+        await api.put(`/messages/markAsRead/${active}`, {});
 
         // Local state – conversationsni ham yangilash
         setConversations(prev =>
@@ -154,7 +152,7 @@ const UserChat = () => {
     const yes = confirm("Chatti tazalawdi qaleysizbe?");
     if (!yes) return;
     try {
-      const res = await api.delete(`/clearMessages/${active}`, { headers: { "x-auth-token": localStorage.getItem("token") } });
+      const res = await api.delete(`/clearMessages/${active}`);
       if (res.data.message === "Tazalandi") { setMessages([]); toast.success("Tazalandi"); }
     } catch (err) { console.log(err); }
   };
@@ -164,7 +162,7 @@ const UserChat = () => {
     const yes = confirm("Chatti oshiriwdi qaleysizbe?");
     if (!yes) return;
     try {
-      const res = await api.delete(`/deleteConversation/${active}`, { headers: { "x-auth-token": localStorage.getItem("token") } });
+      const res = await api.delete(`/deleteConversation/${active}`);
       if (res.data.message === "Oshirildi") {
         setConversations(prev => prev.filter(c => c._id !== active));
         setActive(null);

@@ -63,9 +63,6 @@ const CreatePortfolio = ({ close }) => {
           photo: imageUrl,
         },
 
-        {
-          headers: {"x-auth-token": localStorage.getItem("token")}
-        }
 
       )
 

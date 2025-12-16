@@ -45,9 +45,7 @@ const HeaderUser = () => {
     const fetchUnread = async () => {
       if (!user) return;
       try {
-        const res = await api.get("/conversations/unreadCount", {
-          headers: { "x-auth-token": localStorage.getItem("token") },
-        });
+        const res = await api.get("/conversations/unreadCount");
         setUnreadCount(res.data.unreadCount || 0);
       } catch (err) { console.log(err); }
     };

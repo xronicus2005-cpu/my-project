@@ -26,12 +26,19 @@ import "slick-carousel/slick/slick-theme.css";
 
 import { ToastContainer } from "react-toastify";
 
-function App() {
+import { LoaderProvider } from './context/LoaderContext'
+import { useInitLoader } from './hooksForBackend/useIntiLoader'
+import Loader from "../src/components/Loader"
 
+const AppContent = () => {
 
-  return (
+  useInitLoader()
+
+  return(
     <>
-    <Routes>
+      <Loader/>
+
+      <Routes>
       
       <Route path="/" element={<Home/>}/>
       <Route path='/IT' element={<IT/>}/>
@@ -60,10 +67,20 @@ function App() {
       
 
     </Routes>
+
     <ToastContainer position="top-right" />
 
-      
-      
+    </>
+  )
+}
+
+function App() {
+
+  return (
+    <>
+      <LoaderProvider>
+        <AppContent/>
+      </LoaderProvider>
     </>
 
   )
