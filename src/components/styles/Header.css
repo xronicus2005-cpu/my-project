@@ -1,219 +1,118 @@
 .header {
   width: 100%;
-  background-color: #fff;
-  border-bottom: 1px solid #ccc;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  position: sticky;
-  top: 0;
-  z-index: 50;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  z-index: 10;
 }
 
+/* CONTAINER */
 .header-container {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 15px 40px;
-  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
+/* LEFT */
 .header-left {
   display: flex;
   align-items: center;
-  gap: 30px;
-  flex: 1;
+  gap: 14px;
 }
 
+/* LOGO */
 .header-logo {
+  font-size: 28px;
   font-weight: 800;
-  font-size: 65px;
   text-decoration: none;
-  color: #4CAF50;
-  transition: 0.3s;
+  color: #111;
 }
 
-.header-logo:hover {
-  transform: scale(1.05);
+.header-logo span {
+  color: #22c55e;
 }
 
+/* SEARCH */
 .header-search input {
-  padding: 10px 20px;
-  border-radius: 25px;
-  border: 1px solid #ccc;
-  font-size: 16px;
-  width: 300px;
-  transition: border 0.3s, box-shadow 0.3s;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  width: 220px;
 }
 
 .header-search input:focus {
   outline: none;
-  border-color: #4CAF50;
-  box-shadow: 0 0 5px rgba(76,175,80,0.5);
+  border-color: #22c55e;
 }
 
+/* RIGHT */
 .header-right {
   display: flex;
   align-items: center;
-  gap: 20px;
 }
 
-/* Buttons */
-.header-btn {
-  padding: 10px 25px;
-  font-size: 16px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: 0.3s;
-  font-weight: 600;
+/* AVATAR */
+.avatar {
+  width: 40px;
+  height: 40px;
+  background: #22c55e;
 }
 
-.login-btn {
-  background-color: #fff;
-  color: #4CAF50;
-  border: 2px solid #4CAF50;
+.avatar.small {
+  width: 36px;
+  height: 36px;
 }
 
-.login-btn:hover {
-  background-color: #4CAF50;
-  color: #fff;
+/* DESKTOP / MOBILE */
+.desktop-only {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.create-btn {
-  background-color: #4CAF50;
-  color: #fff;
-  border: 2px solid #4CAF50;
+.mobile-only {
+  display: none;
+  align-items: center;
+  gap: 4px;
 }
 
-.create-btn:hover {
-  background-color: #fff;
-  color: #4CAF50;
-}
-
-/* Avatar */
-.header-avatar {
-  width: 56px;
-  height: 56px;
-  border: 2px solid #fff;
-}
-
-.header-avatar-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-/* Menu linklar */
+/* MENU */
 .menu-link {
-  display: block;
-  padding: 10px 25px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   text-decoration: none;
-  color: #333;
+  color: #111;
 }
 
 .menu-link:hover {
-  background-color: #e6f4ea;
-  color: #2E7D32;
+  background: #f0fdf4;
 }
 
-.logout-link {
-  color: red;
+.logout {
+  color: #dc2626;
 }
 
-/* Desktop / mobile */
-.desktop-buttons {
-  display: flex;
-  gap: 20px;
-}
-
-.desktop-avatar {
-  display: flex;
-}
-
-.mobile-right {
-  display: none;
-  align-items: center;
-  gap: 0.3rem;
-}
-
+/* MOBILE MENU */
 .mobile-menu {
-  display: none;
-  flex-direction: column;
-  gap: 15px;
-  padding: 10px 20px;
-  border-top: 1px solid #ccc;
-  background: #fff;
+  display: flex;
+  gap: 10px;
+  padding: 10px 16px;
+  border-top: 1px solid #e5e7eb;
 }
 
-.header-logo {
-  font-weight: 700;
-  color: #22c55e;
-  font-size: 65px; /* default */
-  transition: font-size 0.3s;
-}
-
-/* Responsive */
+/* RESPONSIVE */
 @media (max-width: 768px) {
-  .desktop-buttons {
+  .desktop-only {
     display: none;
   }
 
-  .desktop-avatar {
-    display: none;
-  }
-
-  .mobile-right {
+  .mobile-only {
     display: flex;
-    gap: 5px;
-    position: absolute;
-    right: 0;
-    align-items: center;
-  }
-
-  .mobile-menu {
-    display: flex;
-  }
-
-  .header-container {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between; /* Work va menu button ikki tomonga */
-  }
-
-  .header-left {
-    gap: 15px;
-  }
-
-  .header-logo {
-    font-size: 50px; /* logoni kattalashtirish */
   }
 
   .header-search {
     display: none;
   }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .header-btn {
-    font-size: 14px;
-    padding: 8px 20px;
-  }
-}
-
-
-.menu-item-flex {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.menu-icon {
-  font-size: 22px;
-  color: #2E7D32;
-}
-
-.logout-icon {
-  color: red;
 }
