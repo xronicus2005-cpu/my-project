@@ -1,17 +1,19 @@
 import { Container, Box } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const useStyles = makeStyles({
+  /* DESKTOP LINK */
   root: {
     fontFamily: "sans-serif",
     position: "relative",
     textDecoration: "none",
-    color: "black",
-    opacity: 0.8,
-    fontSize: "18px",     // default font size
+    color: "#111",
+    opacity: 0.85,
+    fontSize: "18px",
+    fontWeight: 600,
     display: "inline-block",
-    transition: "color 0.3s ease, font-size 0.3s ease",
+    transition: "all 0.3s ease",
     flex: 1,
     textAlign: "center",
 
@@ -28,26 +30,55 @@ const useStyles = makeStyles({
     },
 
     "&:hover": {
-      color: "black",
-      opacity: 0.95,
+      opacity: 1,
     },
 
     "&:hover::before": {
       width: "100%",
     },
   },
+
+  /* MOBILE LINK (DEFAULT) */
+  mobileLink: {
+    minWidth: "120px",
+    padding: "8px 12px",
+    borderRadius: "22px",
+    backgroundColor: "#ffffff",
+    border: "2px solid #22c55e", // green border
+    color: "#064e3b", // green-800
+    fontWeight: 700,
+    fontSize: "14px",
+    textAlign: "center",
+    textDecoration: "none",
+    transition: "all 0.15s ease",
+    whiteSpace: "nowrap",
+
+    "&:active": {
+      transform: "scale(0.97)",
+    },
+  },
+
+  /* ACTIVE MOBILE */
+  activeMobile: {
+    backgroundColor: "#22c55e", // green-500
+    color: "#ffffff",
+    border: "2px solid #22c55e",
+  },
 });
 
 const Jobs = () => {
   const classes = useStyles();
+  const location = useLocation();
+
+  const isActive = (path) => location.pathname === path;
 
   return (
-    <Container style={{ marginTop: "10px" }}>
+    <Container sx={{ mt: 2 }}>
+      {/* DESKTOP */}
       <Box
         sx={{
-          display: "flex",
+          display: { xs: "none", md: "flex" },
           justifyContent: "space-between",
-          width: "100%",
           gap: "20px",
         }}
       >
@@ -58,16 +89,55 @@ const Jobs = () => {
         <Link className={classes.root} to="/Cars">Mashinasazlıq</Link>
       </Box>
 
-      {/* Media query faqat Linklar uchun */}
-      <style>
-        {`
-          @media (max-width: 768px) {
-            .${classes.root} {
-              font-size: 14px !important;
-            }
-          }
-        `}
-      </style>
+      {/* MOBILE */}
+      <Box
+        sx={{
+          display: { xs: "flex", md: "none" },
+          gap: "10px",
+          overflowX: "auto",
+          pb: 1,
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+          "&::-webkit-scrollbar": {
+            display: "none",
+          },
+        }}
+      >
+        <Link
+          to="/IT"
+          className={`${classes.mobileLink} ${isActive("/IT") ? classes.activeMobile : ""}`}
+        >
+          IT
+        </Link>
+
+        <Link
+          to="/HandWork"
+          className={`${classes.mobileLink} ${isActive("/HandWork") ? classes.activeMobile : ""}`}
+        >
+          Qol miyneti
+        </Link>
+
+        <Link
+          to="/Teach"
+          className={`${classes.mobileLink} ${isActive("/Teach") ? classes.activeMobile : ""}`}
+        >
+          Oqıtıw
+        </Link>
+
+        <Link
+          to="/Elektr"
+          className={`${classes.mobileLink} ${isActive("/Elektr") ? classes.activeMobile : ""}`}
+        >
+          Elektronika
+        </Link>
+
+        <Link
+          to="/Cars"
+          className={`${classes.mobileLink} ${isActive("/Cars") ? classes.activeMobile : ""}`}
+        >
+          Mashinasazlıq
+        </Link>
+      </Box>
     </Container>
   );
 };

@@ -18,7 +18,7 @@ const Enter = ({ change, create }) => {
       });
 
       // cookie avtomatik ketadi
-      const res = await api.get("/me");
+      const res = await api.get("/me", {withCredentials: true});
 
       // xohlasang state/contextga saqla
       // localStorage shart emas
