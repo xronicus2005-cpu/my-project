@@ -3,7 +3,7 @@ import { makeStyles } from "@mui/styles";
 import { Link, useLocation } from "react-router-dom";
 
 const useStyles = makeStyles({
-  /* DESKTOP LINK */
+  /* DESKTOP LINK — TEGMADIK */
   root: {
     fontFamily: "sans-serif",
     position: "relative",
@@ -29,42 +29,40 @@ const useStyles = makeStyles({
       transition: "width 0.3s ease",
     },
 
-    "&:hover": {
-      opacity: 1,
-    },
-
     "&:hover::before": {
       width: "100%",
     },
   },
 
-  /* MOBILE LINK (DEFAULT) */
+  /* MOBILE LINK — YUMSHATILDI */
   mobileLink: {
-    minWidth: "120px",
-    padding: "8px 12px",
-    borderRadius: "22px",
-    backgroundColor: "#ffffff",
-    border: "2px solid #22c55e", // green border
-    color: "#064e3b", // green-800
-    fontWeight: 700,
-    fontSize: "14px",
+    minWidth: "100px",
+    padding: "5px 10px",          // kichik
+    borderRadius: "16px",         // kamroq
+    backgroundColor: "rgba(255,255,255,0.65)",
+    border: "1px solid #86efac",  // green-300
+    color: "#166534",             // green-700
+    fontWeight: 500,              // kamroq
+    fontSize: "12.5px",           // kichik
     textAlign: "center",
     textDecoration: "none",
-    transition: "all 0.15s ease",
     whiteSpace: "nowrap",
+    transition: "all 0.12s ease",
 
     "&:active": {
-      transform: "scale(0.97)",
+      transform: "scale(0.96)",
     },
   },
 
-  /* ACTIVE MOBILE */
+  /* ACTIVE MOBILE — SOKIN */
   activeMobile: {
-    backgroundColor: "#22c55e", // green-500
-    color: "#ffffff",
-    border: "2px solid #22c55e",
+    backgroundColor: "#22c55e",   // green-100
+    color: "#fff",             // green-900
+    border: "1px solid #22c55e",
+    fontWeight: 600,
   },
 });
+
 
 const Jobs = () => {
   const classes = useStyles();

@@ -1,3 +1,4 @@
+/* DESKTOP remains unchanged */
 .header {
   width: 100%;
   background: #fff;
@@ -5,7 +6,6 @@
   z-index: 10;
 }
 
-/* CONTAINER */
 .header-container {
   display: flex;
   align-items: center;
@@ -27,10 +27,6 @@
   color: #111;
 }
 
-.header-logo span {
-  color: #22c55e;
-}
-
 /* SEARCH */
 .header-search input {
   padding: 6px 14px;
@@ -40,15 +36,11 @@
   width: 220px;
 }
 
-.header-search input:focus {
-  outline: none;
-  border-color: #22c55e;
-}
-
 /* RIGHT */
 .header-right {
   display: flex;
   align-items: center;
+  gap: 10px;
 }
 
 /* AVATAR */
@@ -58,25 +50,12 @@
   background: #22c55e;
 }
 
-.avatar.small {
-  width: 36px;
-  height: 36px;
+.avatar.large {
+  width: 48px;
+  height: 48px;
 }
 
-/* DESKTOP / MOBILE */
-.desktop-only {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.mobile-only {
-  display: none;
-  align-items: center;
-  gap: 4px;
-}
-
-/* MENU */
+/* MENU LINK */
 .menu-link {
   padding: 10px 16px;
   display: flex;
@@ -84,26 +63,24 @@
   gap: 10px;
   text-decoration: none;
   color: #111;
+  border-radius: 10px;
 }
 
 .menu-link:hover {
-  background: #f0fdf4;
+  background: #dcfce7;
 }
 
 .logout {
   color: #dc2626;
 }
 
-/* MOBILE MENU */
-.mobile-menu {
-  display: flex;
-  gap: 10px;
-  padding: 10px 16px;
-  border-top: 1px solid #e5e7eb;
+/* MOBILE */
+.mobile-only {
+  display: none;
 }
 
-/* RESPONSIVE */
 @media (max-width: 768px) {
+
   .desktop-only {
     display: none;
   }
@@ -112,7 +89,159 @@
     display: flex;
   }
 
+  .header {
+    background: #ecfdf5; /* green-50 */
+    border-bottom: 1px solid #bbf7d0;
+  }
+
+  .mobile-header {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 40px 1fr 40px;
+    align-items: center;
+    padding: 10px 14px;
+  }
+
+  .mobile-logo {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    color: #15803d;
+    text-decoration: none;
+  }
+
+  .mobile-menu {
+    display: flex;
+    gap: 10px;
+    padding: 10px 16px;
+    border-top: 1px solid #bbf7d0;
+  }
+
+  /* MOBILE SIDEBAR */
+  .mobile-sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 50;
+  }
+
+  .mobile-sidebar {
+    width: 260px;
+    height: 100%;
+    background: #f0fdf4;
+    padding: 20px;
+    box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+    animation: slideIn 0.25s ease;
+  }
+
+  @keyframes slideIn {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+  }
+
+  .sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
   .header-search {
     display: none;
   }
 }
+
+
+/* MOBILE ACTION MENU */
+.mobile-action-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+   /* light green background */
+  border-top: 1px solid #bbf7d0;
+}
+
+
+/* MOBILE ACTION MENU – header ostida */
+.mobile-action-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #ecfdf5; /* light green background */
+  border-top: 1px solid #bbf7d0;
+  width: 100%;
+  position: relative; /* header tagida joylashadi */
+  z-index: 20;
+}
+
+/* MOBILE HEADER */
+.mobile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: #f0fdf4; /* header background – light greenish */
+}
+
+/* MOBILE LOGO */
+.mobile-logo {
+  font-size: 22px;
+  font-weight: 700;
+  text-decoration: none;
+  color: #16a34a; /* tailwind green-600 */
+}
+
+/* MOBILE SIDEBAR */
+.mobile-sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);
+  z-index: 30;
+}
+
+.mobile-sidebar {
+  width: 250px;
+  height: 100%;
+  background: #ffffff;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+
+/* MOBILE HEADER */
+.mobile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: #ffffff; /* oq rang */
+}
+
+/* MOBILE LOGO */
+.mobile-logo {
+  font-size: 22px;
+  font-weight: 700;
+  text-decoration: none;
+  color: #22c55e; /* tailwind green-600 */
+}
+
+/* MOBILE ACTION MENU – header ostida full-width */
+.mobile-action-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: #fff;
+  border-top: 1px solid #bbf7d0;
+  width: 100%;
+  position: relative;
+  z-index: 20;
+}
+

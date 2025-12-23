@@ -1,7 +1,8 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { api } from "../api/axios";
 import Header from "./Header";
+import Footer from "./Footer"
 import Jobs from "./Jobs";
 import {
   Container,
@@ -9,34 +10,40 @@ import {
   TextField,
   Box,
   Button,
-  InputLabel,
-  MenuItem,
   FormControl,
   Select,
+  MenuItem,
   OutlinedInput,
   InputAdornment,
 } from "@mui/material";
+
+import PersonIcon from "@mui/icons-material/Person";
+import WorkIcon from "@mui/icons-material/Work";
+import InfoIcon from "@mui/icons-material/Info";
+import BadgeIcon from "@mui/icons-material/Badge";
+import AttachFileIcon from "@mui/icons-material/AttachFile";
+import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
+
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
 
 const selectStyle = {
-  backgroundColor: "white",
-  borderRadius: "12px",
-  fontSize: "1rem",
-  padding: "0.5rem",
+  backgroundColor: "#f9fafb",
+  borderRadius: "0.75rem",
+  padding: "0.5rem 0.75rem",
+  border: "1px solid #d1d5db",
+  fontSize: "0.95rem",
+  color: "#111",
   width: "100%",
-  border: "1px solid #ccc",
 };
 
 const UpdateJobs = () => {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [photo, setPhoto] = useState(null);
+  const navigate = useNavigate();
 
   const [niche, setNiche] = useState("");
   const [profession, setProfession] = useState("");
-
-  const navigate = useNavigate();
 
   const [value, setValue] = useState({
     title: "",
@@ -46,6 +53,8 @@ const UpdateJobs = () => {
     buyersMust: "",
     cost: "",
   });
+
+  console.log(value)
 
   const work = {
     IT: ["Frontend", "Backend", "Android Programmalastiriw", "Operaciyon sitemalar"],
@@ -59,7 +68,6 @@ const UpdateJobs = () => {
     const fetchWork = async () => {
       try {
         const res = await api.get(`/works/${id}`);
-
         const workData = res.data.work;
 
         setValue({
@@ -76,23 +84,17 @@ const UpdateJobs = () => {
 
         setNiche(workData.workType?.niche || "");
         setProfession(workData.workType?.profession || "");
-
-        if (workData.imgWork) {
-          setPhoto(workData.imgWork);
-        }
-
+        if (workData.imgWork) setPhoto(workData.imgWork);
         setLoading(false);
       } catch (err) {
         console.log(err);
       }
     };
-
     fetchWork();
   }, [id]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-
     if (file) {
       setPhoto(URL.createObjectURL(file));
       setValue({ ...value, imgWork: file });
@@ -101,330 +103,241 @@ const UpdateJobs = () => {
 
   if (loading) return <Typography sx={{ mt: 5 }}>loading...</Typography>;
 
-  const updateJobs = async(e) => {
-
+  const updateJobs = async (e) => {
     e.preventDefault();
-
-    try{
-
-      // RASM O'ZGARITILGANINI TEKSHIRISH
+    try {
       let imgUrl = value.imgWork;
 
-      // Agar value.imgWork file bo'lsa (ya'ni foydalanuvchi yangi rasm yuklagan bo'lsa)
       if (value.imgWork && value.imgWork instanceof File) {
-
         const imgData = new FormData();
         imgData.append("file", value.imgWork);
         imgData.append("folder", "Jobs");
 
         const uploadRes = await api.post("/upload", imgData, {
-          headers: { "Content-Type": "multipart/form-data" }
+          headers: { "Content-Type": "multipart/form-data" },
         });
 
         imgUrl = uploadRes.data.url;
       }
 
-      // value.imgWork ni final URL bilan yangilaymiz
-      const sendData = {
-        ...value,
-        imgWork: imgUrl
-      };
-
+      const sendData = { ...value, imgWork: imgUrl };
       const updateRes = await api.put(`/updateWork/${id}`, sendData);
 
-      if(updateRes.data.message === "Janalandi"){
+      if (updateRes.data.message === "Janalandi") {
         toast.success("Janalandi");
         navigate("/Profile");
       }
-
-    }
-    catch(err){
+    } catch (err) {
       console.log(err);
       const msg = err.response?.data?.message;
       toast.error(msg || "Serverde qatelik");
     }
-
-  };
-
-
-  const deleteJob = () => {
-    api
-      .delete(`/deleteWork/${id}`)
-      .then((res) => {
-        if (res.data.message === "Oshirildi") {
-          toast.success("Oshirildi");
-          navigate("/Profile");
-        }
-      })
-      .catch((err) => {
-        const msg = err.response?.data?.message;
-        if (msg) toast.error(msg || "Serverde qatelik");
-      });
   };
 
   return (
     <>
       <Header />
       <Jobs />
-
-      <Container sx={{ mt: 4 }}>
-        
-      </Container>
-
-      <Container
-        sx={{
-          mt: 3,
-          display: "flex",
-          justifyContent: "center",
-          mb: 5,
-          px: { xs: 1, sm: 2 },
-        }}
-      >
-        <form
+      <Container maxWidth="xl" sx={{ mt: 4, mb: 5 }}>
+        <Box
+          component="form"
           onSubmit={updateJobs}
-          style={{
+          sx={{
             width: "100%",
+            maxWidth: "1100px",
+            mx: "auto",
+            backgroundColor: "#fff",
+            borderRadius: "20px",
+            p: { xs: 3, md: 5 },
+            boxShadow: "0 20px 50px rgba(0,0,0,.08)",
             display: "flex",
-            justifyContent: "center",
+            flexDirection: "column",
+            gap: 3,
           }}
         >
+          <Typography fontSize="2rem" fontWeight={700} textAlign="center" mb={2}>
+            Jumıstı jańalaw
+          </Typography>
+
           <Box
             sx={{
-              width: "100%",
-              maxWidth: "650px",
-              backgroundColor: "#fff",
-              p: { xs: 2, sm: 3, md: 4 },
-              borderRadius: "20px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "1.4rem",
-              boxShadow:
-                "0 10px 25px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.1)",
-              animation: "fadeIn 0.3s ease",
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+              gap: 3,
             }}
           >
-            <Typography variant="h4" fontWeight={700}>
-              Jumıstı jańalaw
-            </Typography>
             {/* Title */}
-            <Box>
-              <Typography sx={{ mb: 1, color: "#444", fontWeight: 500 }}>
-                Jumıs atı:
-              </Typography>
+            <FormField icon={<WorkIcon />} label="Jumıs atı">
               <TextField
                 fullWidth
-                label="ati"
+                variant="outlined"
                 value={value.title}
                 onChange={(e) => setValue({ ...value, title: e.target.value })}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "12px",
-                  },
-                }}
+                sx={{ borderRadius: "0.75rem" }}
               />
-            </Box>
+            </FormField>
 
-            {/* Work Type */}
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: { xs: "column", sm: "row" },
-                gap: 2,
-              }}
-            >
-              <Select
-                value={niche}
-                onChange={(e) => {
-                  setNiche(e.target.value);
-                  setValue({
-                    ...value,
-                    workType: { ...value.workType, niche: e.target.value },
-                  });
-                }}
-                displayEmpty
-                fullWidth
-                style={selectStyle}
-              >
-                <MenuItem value="">Baǵdar saylań...</MenuItem>
-                {Object.keys(work).map((r) => (
-                  <MenuItem key={r} value={r}>
-                    {r}
-                  </MenuItem>
-                ))}
-              </Select>
-
-              <Select
-                value={profession}
-                onChange={(e) => {
-                  setProfession(e.target.value);
-                  setValue({
-                    ...value,
-                    workType: { ...value.workType, profession: e.target.value },
-                  });
-                }}
-                disabled={!niche}
-                displayEmpty
-                fullWidth
-                style={selectStyle}
-              >
-                <MenuItem value="">Kásip saylań...</MenuItem>
-                {niche &&
-                  work[niche].map((c) => (
-                    <MenuItem key={c} value={c}>
-                      {c}
-                    </MenuItem>
-                  ))}
-              </Select>
-            </Box>
-
-            {/* Photo */}
-            <Box>
-              <Typography sx={{ mb: 1, fontWeight: 500, color: "#444" }}>
-                Jumıs obloshkasın saylaw:
-              </Typography>
-
-              <label htmlFor="choose">
-                <Box
-                  sx={{
-                    width: "100%",
-                    maxWidth: "320px",
-                    height: { xs: "200px", sm: "250px" },
-                    border: "2px dashed #999",
-                    borderRadius: "14px",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    overflow: "hidden",
-                    cursor: "pointer",
-                    transition: "0.3s",
-                    backgroundColor: "#fafafa",
-                    "&:hover": {
-                      borderColor: "#22c55e",
-                      transform: "scale(1.02)",
-                    },
+            {/* Niche */}
+            <FormField icon={<WorkIcon />} label="Baǵdar">
+              <FormControl fullWidth size="small">
+                <Select
+                  value={niche}
+                  onChange={(e) => {
+                    const newNiche = e.target.value;
+                    setNiche(newNiche);
+                    setProfession("");
+                    setValue(prev => ({...prev, workType: {...prev.workType, niche: newNiche, profession: ""}}));
                   }}
+                  displayEmpty
+                  sx={selectStyle}
                 >
-                  {photo ? (
-                    <img
-                      src={photo}
-                      alt="photo"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  ) : (
-                    <span style={{ fontSize: "3rem", color: "#777" }}>+</span>
-                  )}
-                </Box>
-              </label>
+                  <MenuItem value="">Baǵdar saylań...</MenuItem>
+                  {Object.keys(work).map((r) => (
+                    <MenuItem key={r} value={r}>{r}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </FormField>
 
-              <input
-                type="file"
-                id="choose"
-                style={{ display: "none" }}
-                accept="image/*"
-                onChange={handleFileChange}
-              />
-            </Box>
-
-            {/* Info */}
-            <Box>
-              <Typography sx={{ mb: 1, color: "#444", fontWeight: 500 }}>
-                Jumıs haqqında informaciya:
-              </Typography>
-              <textarea
-                value={value.infoWork}
-                onChange={(e) =>
-                  setValue({ ...value, infoWork: e.target.value })
-                }
-                style={{
-                  width: "100%",
-                  height: "5rem",
-                  padding: "0.8rem",
-                  fontSize: "1rem",
-                  borderRadius: "12px",
-                  border: "1px solid #ccc",
-                }}
-              ></textarea>
-            </Box>
-
-            {/* Buyers Must */}
-            <Box>
-              <Typography sx={{ mb: 1, color: "#444", fontWeight: 500 }}>
-                Jallawshılardan talap etiledi:
-              </Typography>
-              <textarea
-                value={value.buyersMust}
-                onChange={(e) =>
-                  setValue({ ...value, buyersMust: e.target.value })
-                }
-                style={{
-                  width: "100%",
-                  height: "5rem",
-                  padding: "0.8rem",
-                  fontSize: "1rem",
-                  borderRadius: "12px",
-                  border: "1px solid #ccc",
-                }}
-              ></textarea>
-            </Box>
+            {/* Profession */}
+            <FormField icon={<WorkIcon />} label="Kásip">
+              <FormControl fullWidth size="small">
+                <Select
+                  value={profession}
+                  onChange={(e) => {
+                    const newProfession = e.target.value;
+                    setProfession(newProfession);
+                    setValue(prev => ({...prev, workType: {...prev.workType, profession: newProfession}}));
+                  }}
+                  disabled={!niche}
+                  displayEmpty
+                  sx={selectStyle}
+                >
+                  <MenuItem value="">Kásip saylań ...</MenuItem>
+                  {niche && work[niche].map((c) => (
+                    <MenuItem key={c} value={c}>{c}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </FormField>
 
             {/* Cost */}
-            <Box sx={{ display: "flex", flexDirection: "column", mt: 1 }}>
-              <Typography sx={{ mb: 1, color: "#444", fontWeight: 500 }}>
-                Jumıs bahası:
-              </Typography>
+            <FormField icon={<MonetizationOnIcon />} label="Baha">
+              <OutlinedInput
+                fullWidth
+                placeholder="Baha"
+                endAdornment={<InputAdornment position="end">(sum)</InputAdornment>}
+                value={value.cost}
+                onChange={(e) => setValue({ ...value, cost: e.target.value })}
+                sx={{ borderRadius: "0.75rem" }}
+              />
+            </FormField>
 
-              <FormControl fullWidth>
-                <InputLabel>Baha</InputLabel>
-                <OutlinedInput
-                  endAdornment={<InputAdornment position="end">(sum)</InputAdornment>}
-                  label="Baha"
-                  value={value.cost}
-                  onChange={(e) => setValue({ ...value, cost: e.target.value })}
-                  sx={{ borderRadius: "12px" }}
+            {/* Info */}
+            <FormField icon={<InfoIcon />} label="Jumıs haqqında">
+              <textarea
+                value={value.infoWork}
+                onChange={(e) => setValue({ ...value, infoWork: e.target.value })}
+                style={{
+                  width: "100%",
+                  height: "5rem",
+                  borderRadius: "0.75rem",
+                  padding: "0.75rem",
+                  fontSize: "1rem",
+                  border: "1px solid #ccc",
+                  resize: "none",
+                  fontFamily: "sans-serif",
+                }}
+              />
+            </FormField>
+
+            {/* Buyers Must */}
+            <FormField icon={<BadgeIcon />} label="Jallawshılardan talap etiledi">
+              <textarea
+                value={value.buyersMust}
+                onChange={(e) => setValue({ ...value, buyersMust: e.target.value })}
+                style={{
+                  width: "100%",
+                  height: "5rem",
+                  borderRadius: "0.75rem",
+                  padding: "0.75rem",
+                  fontSize: "1rem",
+                  border: "1px solid #ccc",
+                  resize: "none",
+                  fontFamily: "sans-serif",
+                }}
+              />
+            </FormField>
+
+            {/* Image Upload */}
+            <FormField icon={<AttachFileIcon />} label="Jumıs obloshkasın saylaw">
+              <Box
+                component="label"
+                htmlFor="choosePhoto"
+                sx={{
+                  width: { xs: "100%", sm: "220px" },
+                  height: "260px",
+                  border: "0.5px solid #888",
+                  borderRadius: "0.75rem",
+                  overflow: "hidden",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  "&:hover": { transform: "scale(1.03)", backgroundColor: "#f7f7f7" },
+                  transition: "0.3s",
+                }}
+              >
+                {photo ? (
+                  <img src={photo} alt="photo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  <span style={{ fontSize: "3rem", color: "#777" }}>+</span>
+                )}
+                <input
+                  type="file"
+                  id="choosePhoto"
+                  style={{ display: "none" }}
+                  accept="image/*"
+                  onChange={handleFileChange}
                 />
-              </FormControl>
-            </Box>
+              </Box>
+            </FormField>
+          </Box>
 
-            {/* DELETE */}
-            <Button
-              type="button"
-              onClick={deleteJob}
-              sx={{
-                color: "red",
-                width: "100%",
-                fontWeight: 700,
-                fontSize: "1rem",
-              }}
-            >
-              Óshiriw
-            </Button>
-
-            {/* UPDATE */}
+          {/* Submit Button */}
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
             <Button
               type="submit"
-              variant="contained"
               sx={{
-                color: "#fff",
-                backgroundColor: "#22c55e",
-                padding: "0.8rem",
-                fontWeight: 600,
+                px: 4,
+                py: 1.2,
                 borderRadius: "12px",
-                "&:hover": {
-                  backgroundColor: "#16a34a",
-                },
+                backgroundColor: "#22c55e",
+                color: "#fff",
+                fontWeight: 700,
+                "&:hover": { backgroundColor: "#16a34a" },
               }}
             >
               Jańalaw
             </Button>
           </Box>
-        </form>
+        </Box>
       </Container>
+
+      <Footer/>
     </>
   );
 };
+
+/* ===== UI HELPERS ===== */
+const FormField = ({ icon, label, children }) => (
+  <Box>
+    <Typography fontWeight={600} mb={0.5} display="flex" alignItems="center" gap={1} fontSize=".95rem">
+      {icon}
+      {label}
+    </Typography>
+    {children}
+  </Box>
+);
 
 export default UpdateJobs;

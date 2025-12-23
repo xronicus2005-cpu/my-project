@@ -1,153 +1,157 @@
-import { Container, Box, Typography, TextField, Button, Avatar, IconButton, Menu, Badge } from "@mui/material";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import MailIcon from "@mui/icons-material/Mail";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../hooksForBackend/useAuth";
+import { io } from "socket.io-client";
+import { api } from "../api/axios";
+
+import {
+  Avatar,
+  Badge,
+  IconButton,
+  Menu,
+} from "@mui/material";
+
 import MenuIcon from "@mui/icons-material/Menu";
-import CloseIcon from "@mui/icons-material/Close";
+import MailIcon from "@mui/icons-material/Mail";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import PersonIcon from "@mui/icons-material/Person";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { useState, useEffect } from "react";
-import { useAuth } from "../hooksForBackend/useAuth";
-import { Link } from "react-router-dom";
-import { toast } from "react-toastify";
-import { io } from "socket.io-client";
-import { api } from "../api/axios.js"
+import CloseIcon from "@mui/icons-material/Close";
 
 import "./styles/HeaderUser.css";
 
 const HeaderUser = () => {
-  const [notOpen, willOpen] = useState(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [connection, setConnection] = useState(null);
+  const { user, logout, loading } = useAuth();
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [mobileSidebar, setMobileSidebar] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [socket, setSocket] = useState(null);
 
-  const { logout, user, loading } = useAuth();
+  const open = Boolean(anchorEl);
 
-  const open = Boolean(notOpen);
-  const handleClick = (event) => willOpen(event.currentTarget);
-  const handleClose = () => willOpen(null);
+  const colors = ["#37474F", "#e91e63", "#2E7D32"];
+  const avatarColor =
+    user?.sex === "erkek" ? colors[0] :
+    user?.sex === "hayal" ? colors[1] :
+    colors[2];
 
-  const colors = ["#37474F", "#9C27B0", "#00BCD4", "#FF7043", "#e91e63", "#2E7D32"];
-  let currentColorOfAvatar = user?.sex === "erkek" ? colors[0] : user?.sex === "hayal" ? colors[4] : colors[5];
-
-  // Socket connection
+  /* SOCKET */
   useEffect(() => {
-    const socket = io(import.meta.env.VITE_SERVER_URL, {
+    const s = io(import.meta.env.VITE_SERVER_URL, {
       withCredentials: true,
       extraHeaders: { token: localStorage.getItem("token") },
     });
-    setConnection(socket);
-    return () => socket.disconnect();
+    setSocket(s);
+    return () => s.disconnect();
   }, []);
 
-  // Fetch initial unread messages count
   useEffect(() => {
-    const fetchUnread = async () => {
-      if (!user) return;
-      try {
-        const res = await api.get("/conversations/unreadCount");
-        setUnreadCount(res.data.unreadCount || 0);
-      } catch (err) { console.log(err); }
-    };
-    fetchUnread();
+    if (!user) return;
+    api.get("/conversations/unreadCount")
+      .then(res => setUnreadCount(res.data.unreadCount || 0))
+      .catch(() => {});
   }, [user]);
 
-  // Listen new messages via socket
   useEffect(() => {
-    if (!connection) return;
-    const handler = (message) => {
-      if (!message.readBy?.includes(user._id)) {
-        setUnreadCount(prev => prev + 1);
-      }
-    };
-    connection.on("receiveMessage", handler);
-    return () => connection.off("receiveMessage", handler);
-  }, [connection, user]);
+    if (!socket || !user) return;
+    socket.on("receiveMessage", () => {
+      setUnreadCount(prev => prev + 1);
+    });
+    return () => socket.off("receiveMessage");
+  }, [socket, user]);
 
-  // Reset unread counter
-  const handleOpenChat = () => {
-    setUnreadCount(0);
-  };
-
-  if (loading) return <Container sx={{ marginTop: "2rem" }}><p>Tekserilip atir...</p></Container>;
+  if (loading) return null;
 
   return (
     <header className="header">
-      <div className="header-container">
-        {/* LEFT */}
+
+      {/* ================= DESKTOP (AS-IS) ================= */}
+      <div className="header-container desktop-header">
         <div className="header-left">
           <Link to="/" className="header-logo">Work</Link>
+
           <div className="header-search">
             <input type="text" placeholder="Izlew" />
           </div>
         </div>
 
-        {/* RIGHT */}
         <div className="header-right">
+          <Link to="/chat">
+            <Badge badgeContent={unreadCount} color="error">
+              <MailIcon />
+            </Badge>
+          </Link>
 
-          {/* Mail icon with badge */}
-          <div style={{ marginRight: "15px" }}>
-            <Link to="/chat">
-              <Badge badgeContent={unreadCount} color="error">
-                <MailIcon fontSize="large" />
-              </Badge>
-            </Link>
-          </div>
-
-          {/* Desktop avatar */}
-          <button onClick={handleClick} className="header-avatar-btn desktop-avatar">
-            <Avatar style={{ backgroundColor: currentColorOfAvatar }} className="header-avatar">
-              {user?.name ? user.name.charAt(0).toUpperCase() : <AccountCircleIcon />}
+          <IconButton
+            
+            onClick={(e) => setAnchorEl(e.currentTarget)}
+          >
+            <Avatar style={{ backgroundColor: avatarColor }}>
+              {user?.imgProfile ? (
+                <img src={user.imgProfile} alt="Profile" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
+              ) : (
+                user?.name ? user.name[0].toUpperCase() : <AccountCircleIcon />
+              )}
             </Avatar>
-          </button>
-
-          {/* Mobile menu toggle */}
-          <div className="mobile-menu-toggle">
-            <IconButton onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-              <MenuIcon fontSize="large" color="black" />
-            </IconButton>
-          </div>
+          </IconButton>
         </div>
       </div>
 
-      {/* DROPDOWN MENU */}
+      {/* ================= MOBILE HEADER ================= */}
+      <div className="mobile-header">
+        <IconButton onClick={() => setMobileSidebar(true)}>
+          <MenuIcon />
+        </IconButton>
+
+        <Link to="/" className="mobile-logo">Work</Link>
+
+        <Link to="/chat">
+          <Badge badgeContent={unreadCount} color="error">
+            <MailIcon />
+          </Badge>
+        </Link>
+      </div>
+
+      {/* ================= DESKTOP MENU ================= */}
       <Menu
-        anchorEl={notOpen}
+        anchorEl={anchorEl}
         open={open}
-        onClose={handleClose}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
+        onClose={() => setAnchorEl(null)}
       >
-        <Link onClick={handleClose} className="menu-link menu-flex" to={"/Profile"}>
-          <PersonIcon className="menu-icon" />
-          <span>Profilim</span>
+        <Link className="menu-link menu-flex" to="/Profile">
+          <PersonIcon /> Profilim
         </Link>
 
-        <Link onClick={handleClose} className="menu-link menu-flex" to={"/Settings"}>
-          <SettingsIcon className="menu-icon" />
-          <span>Sazlamalar</span>
+        <Link className="menu-link menu-flex" to="/Settings">
+          <SettingsIcon /> Sazlamalar
         </Link>
 
-        <div onClick={logout} className="menu-link logout-link menu-flex">
-          <LogoutIcon className="menu-icon logout-red" />
-          <span>Shıǵıw</span>
+        <div className="menu-link menu-flex logout" onClick={logout}>
+          <LogoutIcon /> Shıǵıw
         </div>
       </Menu>
 
-      {/* MOBILE MENU */}
-      {mobileMenuOpen && (
-        <div className="mobile-menu">
-          <button onClick={handleClick} className="header-avatar-btn mobile-avatar">
-            <Avatar style={{ backgroundColor: currentColorOfAvatar }} className="header-avatar">
-              {user?.name ? user.name.charAt(0).toUpperCase() : <AccountCircleIcon />}
+      {/* ================= MOBILE SIDEBAR ================= */}
+      {mobileSidebar && (
+        <div className="mobile-sidebar">
+          <div className="sidebar-header">
+            <Avatar style={{ backgroundColor: avatarColor }}>
+              {user?.name?.[0] || <AccountCircleIcon />}
             </Avatar>
-          </button>
-          <Link to="/chat" onClick={handleOpenChat} className="menu-link">Chat</Link>
-          <Link to="/Profile" className="menu-link">Profilim</Link>
-          <Link to="/Settings" className="menu-link">Sazlamalar</Link>
-          <div onClick={logout} className="menu-link logout-link">Shıǵıw</div>
+
+            <IconButton onClick={() => setMobileSidebar(false)}>
+              <CloseIcon />
+            </IconButton>
+          </div>
+
+          <Link to="/Profile" className="sidebar-link">Profilim</Link>
+          <Link to="/Settings" className="sidebar-link">Sazlamalar</Link>
+          <div onClick={logout} className="sidebar-link logout">Shıǵıw</div>
         </div>
       )}
+
     </header>
   );
 };
